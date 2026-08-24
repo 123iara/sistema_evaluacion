@@ -34,12 +34,16 @@ def menu_principal():
       print("2. Lista estudiantes")
       print("3. Buscar estudiante")
       print("4. Modificar estudiante")
-      print("5. Salir")
+      print("5. Eliminar estudiante")
+      print("6. Salir")
 
   
 #DATOS
+#ESTUDIANTES:
 estudiantes = []
 
+#CRUD (Crear, Leer, Actualizar, Eliminar) de los estudiantes:
+#ACA EMPIEZA CREATE (Crear)
 def registrar_estudiante():
     print("---- REGISTRO DE ESTUDIANTE ----")
 
@@ -80,7 +84,7 @@ def registrar_estudiante():
 
 
 # --- ENCONTRAR ESTUDIANTE ---
-
+#ACA EMPIEZA READ (Leer/Buscar/Listar)
 def listar_estudiantes():
     print("-- LISTA DE ESTUDIANTES --")
     for estudiante in estudiantes:
@@ -99,8 +103,7 @@ def buscar_estudiante():
     print("Estudiante no encontrado.")
 
 
-#UPDATE Estudiante:
-
+#ACA EMPIEZA UPDATE (Actualizar)
 def modificar_estudiante():
     dni = input("Ingrese el DNI del estudiante a modificar: ")
 
@@ -125,30 +128,22 @@ def modificar_estudiante():
          print("Estudiante no encontrado.")
 
 
-#UPDATE Estudiante:
-
-def modificar_estudiante():
-    dni = input("Ingrese el DNI del estudiante a modificar: ")
+#ACA EMPIEZA DELETE (Eliminar)
+def eliminar_estudiante():
+    print("Elimine el estudiante")
+    dni = input("Ingrese el DNI del estudiante a eliminar: ")
 
     for estudiante in estudiantes:
+        #Lo busca por DNI y si lo encuentra lo elimina de la lista
         if estudiante["dni"] == dni:
-            print("Estudiante encontrado:")
-            print("Nombre:", estudiante["nombre"])
-            print("Apellido:", estudiante["apellido"])
-            print("Legajo:", estudiante["legajo"])
+            print ("Estudiante encontrado:")
+            print("Nombre:", estudiante["nombre"], estudiante["apellido"])
 
-            #PEDIR NUEVOS DATOS 
-            nuevo_nombre = input("Ingrese el nuevo nombre del estudiante: ")
-            nuevo_apellido = input("Ingrese el nuevo apellido del estudiante: ")
-
-            #ACTUALIZAR LOS DATOS DEL ESTUDIANTE
-            estudiante["nombre"] = nuevo_nombre
-            estudiante["apellido"] = nuevo_apellido
-
-            print("Datos del estudiante actualizados con éxito.")
+            estudiantes.remove(estudiante)
+            print("Estudiante eliminado con éxito.")
             return
-    else:
-         print("Estudiante no encontrado.")
+     #Si no encuentra al estudiante:   
+    print("Estudiante no encontrado.")
 
 
 #Ejecucion del sistema:
@@ -160,7 +155,7 @@ def ejecutar_sistema():
 
         opcion = 0
 
-        while opcion != 5:
+        while opcion != 6:
             menu_principal()
             opcion = int(input("Ingrese una opcion:"))
 
@@ -173,6 +168,8 @@ def ejecutar_sistema():
             elif opcion == 4:
                 modificar_estudiante()
             elif opcion == 5:
+                eliminar_estudiante()
+            elif opcion == 6:
                 print("Saliendo del sistema...")
 
     else:
