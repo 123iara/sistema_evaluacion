@@ -31,8 +31,8 @@ def login():
             print("Ingreso correcto al sistema.")
         else:
             intentos = intentos - 1
-            print("Usuario o contrasena incorrectos.")
-            print("Intentos restantes:", intentos)
+            print("\033[31mUsuario o contrasena incorrectos.\033[0m")
+            print("\033[33mIntentos restantes:\033[0m", intentos)
 
     return acceso
 
@@ -410,8 +410,5 @@ def ejecutar_sistema():
             
 
 
-
-
-
-#
+#ejecucion del sistema
 ejecutar_sistema()
