@@ -155,6 +155,25 @@ def modificar_estudiante():
     else:
          print("Estudiante no encontrado.")
 
+#Eliminar Estudiante (Delete - CRUD)
+def eliminar_estudiante():
+    print("-- ELIMINAR ESTUDIANTE --")
+
+    dni = input("Ingrese el DNI del estudiante a eliminar: ")
+
+    for estudiante in estudiantes:
+        if estudiante["dni"] == dni:
+            print("Estudiante encontrado:")
+            print("Nombre:", estudiante["nombre"])
+            print("Apellido:", estudiante["apellido"])
+            print("Legajo:", estudiante["legajo"])
+
+            estudiantes.remove(estudiante)
+
+            print("Estudiante eliminado correctamente.")
+            return
+
+    print("Estudiante no encontrado.")
 
 
 #AGREGAR ALUMNO A MATERIA
@@ -388,7 +407,7 @@ def ejecutar_sistema():
 
         opcion = 0
 
-        while opcion != 6:
+        while opcion != 7:
             menu_principal()
             opcion = int(input("Ingrese una opcion:"))
 
@@ -403,6 +422,8 @@ def ejecutar_sistema():
             elif opcion == 5:
                 materias()  
             elif opcion == 6:
+                eliminar_estudiante()
+            elif opcion == 7:
                 print("Saliendo del sistema..")
 
     else:
@@ -415,3 +436,4 @@ def ejecutar_sistema():
 
 #
 ejecutar_sistema()
+
