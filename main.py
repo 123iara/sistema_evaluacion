@@ -28,7 +28,7 @@ def login():
 
         if usuario == USUARIO and contrasena == CONTRASENA:
             acceso = True
-            print("Ingreso correcto al sistema.")
+            print("\033[32mIngreso correcto al sistema.\033[0m")
         else:
             intentos = intentos - 1
             print("\033[31mUsuario o contrasena incorrectos.\033[0m")
@@ -41,7 +41,7 @@ def login():
  #MENU PRINCIPAL   
  
 def menu_principal():
-      print("----- MENU PRINCIPAL -----")
+      print("\033[34m----- MENU PRINCIPAL -----\033[0m")
       print("1. Registrar estudiante")
       print("2. Lista estudiantes")
       print("3. Buscar estudiante")
@@ -104,7 +104,7 @@ def registrar_estudiante():
     #AGREGARLO A LA LISTA
     estudiantes.append(nuevo_estudiante)
 
-    print("Estudiante registrado con éxito.")
+    print("\033[32mEstudiante registrado con éxito.\033[0m")
     print("Nombre:", nombre)
     print("Apellido:", apellido)
     print("Legajo:", legajo)
