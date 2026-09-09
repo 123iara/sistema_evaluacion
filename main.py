@@ -1,7 +1,11 @@
 #DATOS
 
-USUARIO = "user"
-CONTRASENA = "4321"
+USERYCONT = (
+    ("admin", "admin123"),
+    ("user", "1234"),
+    ("user2", "4321")
+
+)
 
 
 
@@ -22,11 +26,11 @@ def login():
     intentos = 3
 
     while intentos > 0 and acceso == False:
-        print(" ----- LOGIN ----- ")
+        print("\033[4;35m---------- LOGIN ----------\033[0m")
         usuario = input("Usuario: ")
         contrasena = input("Contrasena: ")
 
-        if usuario == USUARIO and contrasena == CONTRASENA:
+        if (usuario, contrasena) in USERYCONT:
             acceso = True
             print("\033[32mIngreso correcto al sistema.\033[0m")
         else:
@@ -41,7 +45,7 @@ def login():
  #MENU PRINCIPAL   
  
 def menu_principal():
-      print("\033[34m----- MENU PRINCIPAL -----\033[0m")
+      print("\033[1;33;44m----- MENU PRINCIPAL -----\033[0m")
       print("1. Registrar estudiante")
       print("2. Lista estudiantes")
       print("3. Buscar estudiante")
@@ -72,7 +76,7 @@ def mostrar_submenu_materia(nombre_materia):
 #DATOS
 
 def registrar_estudiante():
-    print("---- REGISTRO DE ESTUDIANTE ----")
+    print("\033[34m------- REGISTRO DE ESTUDIANTE -------\033[0m")
 
     dni = input("Ingrese el DNI del estudiante: ")
 
@@ -113,12 +117,12 @@ def registrar_estudiante():
 #ENCONTRAR ESTUDIANTE
 
 def listar_estudiantes():
-    print("-- LISTA DE ESTUDIANTES --")
+    print("\033[34m------- LISTA DE ESTUDIANTES -------\033[0m")
     for estudiante in estudiantes:
         print("Legajo:", estudiante["legajo"], "| DNI:", estudiante["dni"], "| Nombre:", estudiante["nombre"], estudiante["apellido"])
 
 def buscar_estudiante():
-    print("-- BUSCAR ESTUDIANTE --")
+    print("\033[34m------- BUSCAR ESTUDIANTE -------\033[0m")
     dni = input("Ingrese el DNI a buscar: ")
     for estudiante in estudiantes:
         if estudiante["dni"] == dni:
@@ -161,7 +165,7 @@ def modificar_estudiante():
 
 def agregar_alumno_materia(lista_materia):
 
-    print("----- AGREGAR ALUMNO -----")
+    print("--- AGREGAR ALUMNO ---")
 
     dni = input("Ingrese el DNI del estudiante: ")
 
