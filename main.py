@@ -28,11 +28,11 @@ def login():
 
         if usuario == USUARIO and contrasena == CONTRASENA:
             acceso = True
-            print("Ingreso correcto al sistema.")
+            print("\033[32mIngreso correcto al sistema.\033[0m")
         else:
             intentos = intentos - 1
-            print("Usuario o contrasena incorrectos.")
-            print("Intentos restantes:", intentos)
+            print("\033[31mUsuario o contrasena incorrectos.\033[0m")
+            print("\033[33mIntentos restantes:\033[0m", intentos)
 
     return acceso
 
@@ -41,7 +41,7 @@ def login():
  #MENU PRINCIPAL   
  
 def menu_principal():
-      print("----- MENU PRINCIPAL -----")
+      print("\033[34m----- MENU PRINCIPAL -----\033[0m")
       print("1. Registrar estudiante")
       print("2. Lista estudiantes")
       print("3. Buscar estudiante")
@@ -104,7 +104,7 @@ def registrar_estudiante():
     #AGREGARLO A LA LISTA
     estudiantes.append(nuevo_estudiante)
 
-    print("Estudiante registrado con éxito.")
+    print("\033[32mEstudiante registrado con éxito.\033[0m")
     print("Nombre:", nombre)
     print("Apellido:", apellido)
     print("Legajo:", legajo)
@@ -155,25 +155,6 @@ def modificar_estudiante():
     else:
          print("Estudiante no encontrado.")
 
-#Eliminar Estudiante (Delete - CRUD)
-def eliminar_estudiante():
-    print("-- ELIMINAR ESTUDIANTE --")
-
-    dni = input("Ingrese el DNI del estudiante a eliminar: ")
-
-    for estudiante in estudiantes:
-        if estudiante["dni"] == dni:
-            print("Estudiante encontrado:")
-            print("Nombre:", estudiante["nombre"])
-            print("Apellido:", estudiante["apellido"])
-            print("Legajo:", estudiante["legajo"])
-
-            estudiantes.remove(estudiante)
-
-            print("Estudiante eliminado correctamente.")
-            return
-
-    print("Estudiante no encontrado.")
 
 
 #AGREGAR ALUMNO A MATERIA
@@ -407,7 +388,7 @@ def ejecutar_sistema():
 
         opcion = 0
 
-        while opcion != 7:
+        while opcion != 6:
             menu_principal()
             opcion = int(input("Ingrese una opcion:"))
 
@@ -422,8 +403,6 @@ def ejecutar_sistema():
             elif opcion == 5:
                 materias()  
             elif opcion == 6:
-                eliminar_estudiante()
-            elif opcion == 7:
                 print("Saliendo del sistema..")
 
     else:
@@ -431,9 +410,5 @@ def ejecutar_sistema():
             
 
 
-
-
-
-#
+#ejecucion del sistema
 ejecutar_sistema()
-
