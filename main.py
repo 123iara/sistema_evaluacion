@@ -302,11 +302,11 @@ def modificar_nota(lista_materia):
             print("Alumno:", alumno["nombre"], alumno["apellido"])
             print("Nota actual:", alumno["nota"])
 
-            nueva_nota = int(input("Ingrese la nueva nota: "))
+            nueva_nota = float(input("Ingrese la nueva nota: ")) #float para permitir notas decimales (con PUNTO, no con COMA)
 
             while nueva_nota < 0 or nueva_nota > 10:
                 print("La nota debe estar entre 0 y 10.")
-                nueva_nota = int(input("Ingrese nuevamente la nota: "))
+                nueva_nota = float(input("Ingrese nuevamente la nota: "))
 
             alumno["nota"] = nueva_nota
 
