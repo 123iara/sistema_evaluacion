@@ -13,11 +13,21 @@ estudiantes = {}
 
 #DICCIONARIOS de materias
 materias = {
-    "Matematicas": {},
-    "Lengua": {},
-    "Ciencias": {},
-    "Historia": {},
-    "Geografia": {}
+    "Matematicas": {    #Cada materia tiene su propia lista de alumnos.
+        "alumnos": []
+    },
+    "Lengua": {
+        "alumnos": []
+    },
+    "Ciencias": {
+        "alumnos": []
+    },
+    "Historia": {
+        "alumnos": []
+    },
+    "Geografia": {
+        "alumnos": []
+    }
 }
 
 
@@ -46,7 +56,7 @@ def login():
 
     
  #MENU PRINCIPAL   
- 
+
 def menu_principal():
       print("\033[1;33;44m----- MENU PRINCIPAL -----\033[0m")
       print("1. Registrar estudiante")
@@ -165,7 +175,7 @@ def modificar_estudiante():
 
 
 #AGREGAR ALUMNO A MATERIA
-def agregar_alumno_materia(materias):
+def agregar_alumno_materia(materia):
 
     print("--- AGREGAR ALUMNO ---")
 
@@ -180,21 +190,21 @@ def agregar_alumno_materia(materias):
             estudiante = estudiantes[dni]
 
             # VERIFICAR SI YA ESTA EN LA MATERIA
-            for alumno in materias ["alumnos"]: #rrecorremos la lista de alumnos en esa materia
+            for alumno in materia ["alumnos"]: #rrecorremos la lista de alumnos en esa materia
                 if alumno["dni"] == dni:
                     print("El estudiante ya esta agregado a esta materia.")
                     return
 
             # AGREGAR EL ESTUDIANTE A LA MATERIA
             nuevo_alumno = {
-                "dni": estudiante["dni"],
+                "dni": dni,
                 "legajo": estudiante["legajo"],
                 "nombre": estudiante["nombre"],
                 "apellido": estudiante["apellido"],
                 "nota": 0
             }
 
-            materias["alumnos"].append(nuevo_alumno)
+            materia["alumnos"].append(nuevo_alumno)
 
             print("Alumno agregado correctamente a la materia.")
             print("Nombre:", estudiante["nombre"])
@@ -239,9 +249,7 @@ def mostrar_notas(lista_materia):
         print("No hay alumnos registrados en esta materia.")
 
     else:
-
-        for alumno in lista_materia:
-
+        for alumno in lista_materia: #esto va a ser "materia["alumnos"]"  en la opcion 2 en el menu
             print(
                 "Legajo:", alumno["legajo"],
                 "| Alumno:", alumno["nombre"],
@@ -275,7 +283,7 @@ def modificar_alumno_materia(lista_materia):
             print("Alumno modificado correctamente.")
 
             return
-
+        
     print("Alumno no encontrado en esta materia.")
 
 
@@ -287,7 +295,7 @@ def modificar_nota(lista_materia):
 
     dni = input("Ingrese el DNI del alumno: ")
 
-    for alumno in lista_materia:
+    for alumno in lista_materia: #buscamos al alumno dentro de la materia
 
         if alumno["dni"] == dni:
 
@@ -310,8 +318,7 @@ def modificar_nota(lista_materia):
 
 
 #MENUS Y SUBMENUS
-
-def menu_materia(nombre_materia, lista_materia):
+def menu_materia(nombre_materia, materia):
 
     opcion = 0
 
@@ -320,21 +327,21 @@ def menu_materia(nombre_materia, lista_materia):
         mostrar_submenu_materia(nombre_materia)
 
         opcion = int(input("Ingrese una opcion: "))
-
+        
         if opcion == 1:
-            listar_alumnos_materia(lista_materia)
+            listar_alumnos_materia(materia["alumnos"])
 
         elif opcion == 2:
-            mostrar_notas(lista_materia)
+            mostrar_notas(materia["alumnos"]) #mostrar_notas() necesita recorrer los alumnos para poder mostrar la nota de cada uno.
 
         elif opcion == 3:
-            agregar_alumno_materia(lista_materia)
+            agregar_alumno_materia(materia) #esta función necesita la materia completa para poder agregar el alumno dentro de "alumnos"
 
         elif opcion == 4:
-            modificar_alumno_materia(lista_materia)
+            modificar_alumno_materia(materia["alumnos"])
 
         elif opcion == 5:
-            modificar_nota(lista_materia)
+            modificar_nota(materia["alumnos"])
 
         elif opcion == 6:
             print("Volviendo al menu de materias...")
@@ -343,8 +350,8 @@ def menu_materia(nombre_materia, lista_materia):
             print("Ingrese una opcion valida.")
 
 
-
-def materias():
+#MENU MATERIAS
+def menu_materias():
 
     opcion = 0
 
@@ -376,11 +383,9 @@ def materias():
             print("Ingrese una opcion valida.")
             
         
+
     
-
-
-#Ejecucion del sistema:
-
+#EEJECUCION DEL SISTEMA:
 def ejecutar_sistema():
     acceso = login()
 
@@ -402,7 +407,7 @@ def ejecutar_sistema():
             elif opcion == 4:
                 modificar_estudiante()
             elif opcion == 5:
-                materias()  
+                menu_materias()  
             elif opcion == 6:
                 print("Saliendo del sistema..")
 
