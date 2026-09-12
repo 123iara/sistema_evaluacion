@@ -118,7 +118,8 @@ def registrar_estudiante():
         "apellido": apellido
     }
 
-    #AGREGARLO A LA LISTA
+  
+    #AGREGARLO AL DICCIONARIO
     estudiantes[dni] = nuevo_estudiante
 
     print("\033[32mEstudiante registrado con éxito.\033[0m")
@@ -131,20 +132,27 @@ def registrar_estudiante():
 
 def listar_estudiantes():
     print("\033[34m------- LISTA DE ESTUDIANTES -------\033[0m")
+
+    if len(estudiantes) == 0:
+        print("No hay estudiantes registrados.")
+        return
+
     for dni, estudiante in estudiantes.items():
-      print("Legajo:", estudiante["legajo"], "| DNI:", dni, "| Nombre:", estudiante["nombre"], estudiante["apellido"])
+        print("Legajo:", estudiante["legajo"], "| DNI:", dni, "| Nombre:", estudiante["nombre"], estudiante["apellido"])
 
 def buscar_estudiante():
     print("\033[34m------- BUSCAR ESTUDIANTE -------\033[0m")
     dni = input("Ingrese el DNI a buscar: ")
+
     if dni in estudiantes:
         estudiante = estudiantes[dni]
+
         print("Estudiante encontrado:")
         print("Nombre:", estudiante["nombre"])
         print("Apellido:", estudiante["apellido"])
-        print("Legajo:", estudiante["legajo"]) 
-        
-    print("Estudiante no encontrado.")
+        print("Legajo:", estudiante["legajo"])
+    else:
+        print("Estudiante no encontrado.")
 
 
 #UPDATE Estudiante:
@@ -169,7 +177,7 @@ def modificar_estudiante():
 
          print("Datos del estudiante actualizados con éxito.")
          return
-    else:
+    
          print("Estudiante no encontrado.")
 
 
