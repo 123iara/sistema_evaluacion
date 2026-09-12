@@ -8,14 +8,17 @@ USERYCONT = (
 )
 
 
-
+#DICCIONARIO de estudiantes
 estudiantes = {}
 
-matematicas = []
-lengua = []
-ciencias = []
-historia = []
-geografia = []
+#DICCIONARIOS de materias
+materias = {
+    "Matematicas": {},
+    "Lengua": {},
+    "Ciencias": {},
+    "Historia": {},
+    "Geografia": {}
+}
 
 
 
@@ -96,7 +99,7 @@ def registrar_estudiante():
     apellido = input("Ingrese el apellido del estudiante: ")
 
 #ASIGNAR UN NUEVO LEGAJO
-    legajo = len(estudiantes) + 1
+    legajo = len(estudiantes) + 1   
 
     #CREAR AL ESTUDIANTE
     nuevo_estudiante = {
@@ -162,33 +165,27 @@ def modificar_estudiante():
 
 
 #AGREGAR ALUMNO A MATERIA
-
-def agregar_alumno_materia(lista_materia):
+def agregar_alumno_materia(materias):
 
     print("--- AGREGAR ALUMNO ---")
 
-    dni = input("Ingrese el DNI del estudiante: ")
+    dni = input("Ingrese el DNI del estudiante: ") #buscamos el DNI del estuidante que queremos agregar
 
     #BUSCAMOS SI EL ESTUDIANTE EXISTE
-    
-
     estudiante_encontrado = False
 
-    for estudiante in estudiantes:
+    if dni in estudiantes: #¿DNI existe en estudiantes?
 
-        if estudiante["dni"] == dni:
-
-            estudiante_encontrado = True
+            estudiante_encontrado = True #DNI existe = estudiante encontrado
+            estudiante = estudiantes[dni]
 
             # VERIFICAR SI YA ESTA EN LA MATERIA
-
-            for alumno in lista_materia:
+            for alumno in materias ["alumnos"]: #rrecorremos la lista de alumnos en esa materia
                 if alumno["dni"] == dni:
                     print("El estudiante ya esta agregado a esta materia.")
                     return
 
             # AGREGAR EL ESTUDIANTE A LA MATERIA
-
             nuevo_alumno = {
                 "dni": estudiante["dni"],
                 "legajo": estudiante["legajo"],
@@ -197,7 +194,7 @@ def agregar_alumno_materia(lista_materia):
                 "nota": 0
             }
 
-            lista_materia.append(nuevo_alumno)
+            materias["alumnos"].append(nuevo_alumno)
 
             print("Alumno agregado correctamente a la materia.")
             print("Nombre:", estudiante["nombre"])
@@ -358,19 +355,19 @@ def materias():
         opcion = int(input("Ingrese una opcion: "))
 
         if opcion == 1:
-            menu_materia("MATEMATICAS", matematicas)
+            menu_materia("MATEMATICAS", materias ["Matematicas"])
 
         elif opcion == 2:
-            menu_materia("LENGUA", lengua)
+            menu_materia("LENGUA", materias ["Lengua"])
 
         elif opcion == 3:
-            menu_materia("CIENCIAS", ciencias)
+            menu_materia("CIENCIAS", materias ["Ciencias"])
 
         elif opcion == 4:
-            menu_materia("HISTORIA", historia)
+            menu_materia("HISTORIA", materias ["Historia"])
 
         elif opcion == 5:
-            menu_materia("GEOGRAFIA", geografia)
+            menu_materia("GEOGRAFIA", materias ["Geografia"])
 
         elif opcion == 6:
             print("Volviendo al menu principal...")
