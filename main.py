@@ -9,7 +9,7 @@ USERYCONT = (
 
 
 
-estudiantes = []
+estudiantes = {}
 
 matematicas = []
 lengua = []
@@ -82,13 +82,14 @@ def registrar_estudiante():
 
 #VERIFICAR SI EL DNI YA ESTÁ REGISTRADO
 
-    for estudiante in estudiantes:
-        if estudiante["dni"] == dni: 
-            print("El estudiante ya está registrado.")
-            print("Nombre:", estudiante["nombre"])
-            print("Apellido:", estudiante["apellido"])
-            print("Legajo:", estudiante["legajo"])
-            return
+    if dni in estudiantes:
+        estudiante = estudiantes[dni]
+
+        print("El estudiante ya está registrado.")
+        print("Nombre:", estudiante["nombre"])
+        print("Apellido:", estudiante["apellido"])
+        print("Legajo:", estudiante["legajo"])
+        return
 
 #SI EL DNI NO ESTÁ REGISTRADO, PEDIMOS LOS DATOS DEL ESTUDIANTE PARA REGISTRARLO
     nombre = input("Ingrese el nombre del estudiante: ")
@@ -99,14 +100,13 @@ def registrar_estudiante():
 
     #CREAR AL ESTUDIANTE
     nuevo_estudiante = {
-        "dni": dni,
         "legajo": legajo,
         "nombre": nombre,
         "apellido": apellido
     }
 
     #AGREGARLO A LA LISTA
-    estudiantes.append(nuevo_estudiante)
+    estudiantes[dni] = nuevo_estudiante
 
     print("\033[32mEstudiante registrado con éxito.\033[0m")
     print("Nombre:", nombre)
@@ -118,19 +118,19 @@ def registrar_estudiante():
 
 def listar_estudiantes():
     print("\033[34m------- LISTA DE ESTUDIANTES -------\033[0m")
-    for estudiante in estudiantes:
-        print("Legajo:", estudiante["legajo"], "| DNI:", estudiante["dni"], "| Nombre:", estudiante["nombre"], estudiante["apellido"])
+    for dni, estudiante in estudiantes.items():
+      print("Legajo:", estudiante["legajo"], "| DNI:", dni, "| Nombre:", estudiante["nombre"], estudiante["apellido"])
 
 def buscar_estudiante():
     print("\033[34m------- BUSCAR ESTUDIANTE -------\033[0m")
     dni = input("Ingrese el DNI a buscar: ")
-    for estudiante in estudiantes:
-        if estudiante["dni"] == dni:
-            print("Estudiante encontrado:")
-            print("Nombre:", estudiante["nombre"])
-            print("Apellido:", estudiante["apellido"])
-            print("Legajo:", estudiante["legajo"])
-            return
+    if dni in estudiantes:
+        estudiante = estudiantes[dni]
+        print("Estudiante encontrado:")
+        print("Nombre:", estudiante["nombre"])
+        print("Apellido:", estudiante["apellido"])
+        print("Legajo:", estudiante["legajo"]) 
+        
     print("Estudiante no encontrado.")
 
 
@@ -138,24 +138,24 @@ def buscar_estudiante():
 
 def modificar_estudiante():
     dni = input("Ingrese el DNI del estudiante a modificar: ")
-
-    for estudiante in estudiantes:
-        if estudiante["dni"] == dni:
-            print("Estudiante encontrado:")
-            print("Nombre:", estudiante["nombre"])
-            print("Apellido:", estudiante["apellido"])
-            print("Legajo:", estudiante["legajo"])
-
+    if dni in estudiantes:
+         estudiante = estudiantes[dni]
+    
+         print("Estudiante encontrado:")
+         print("Nombre:", estudiante["nombre"])
+         print("Apellido:", estudiante["apellido"])
+         print("Legajo:", estudiante["legajo"])
+ 
             #PEDIR NUEVOS DATOS 
-            nuevo_nombre = input("Ingrese el nuevo nombre del estudiante: ")
-            nuevo_apellido = input("Ingrese el nuevo apellido del estudiante: ")
+         nuevo_nombre = input("Ingrese el nuevo nombre del estudiante: ")
+         nuevo_apellido = input("Ingrese el nuevo apellido del estudiante: ")
 
             #ACTUALIZAR LOS DATOS DEL ESTUDIANTE
-            estudiante["nombre"] = nuevo_nombre
-            estudiante["apellido"] = nuevo_apellido
+         estudiante["nombre"] = nuevo_nombre
+         estudiante["apellido"] = nuevo_apellido
 
-            print("Datos del estudiante actualizados con éxito.")
-            return
+         print("Datos del estudiante actualizados con éxito.")
+         return
     else:
          print("Estudiante no encontrado.")
 
