@@ -178,7 +178,7 @@ def modificar_estudiante():
          print("Datos del estudiante actualizados con éxito.")
          return
     
-         print("Estudiante no encontrado.")
+    print("Estudiante no encontrado.")
 
 
 
