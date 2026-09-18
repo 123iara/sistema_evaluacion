@@ -1,4 +1,4 @@
-#DATOS
+import re
 
 USERYCONT = (
     ("admin", "admin123"),
@@ -7,32 +7,34 @@ USERYCONT = (
 
 )
 
+dnis_registrados = set()
+alumnos_en_materias = set()
 
-#DICCIONARIO de estudiantes
 estudiantes = {}
 
-#DICCIONARIOS de materias
 materias = {
-    "Matematicas": {    #Cada materia tiene su propia lista de alumnos.
-        "alumnos": []
+    "Matematicas": {
+        "alumnos": [],
+        "dnis": set()
     },
     "Lengua": {
-        "alumnos": []
+        "alumnos": [],
+        "dnis": set()
     },
     "Ciencias": {
-        "alumnos": []
+        "alumnos": [],
+        "dnis": set()
     },
     "Historia": {
-        "alumnos": []
+        "alumnos": [],
+        "dnis": set()
     },
     "Geografia": {
-        "alumnos": []
+        "alumnos": [],
+        "dnis": set()
     }
 }
 
-
-
-# LOGIN
 
 def login():
     acceso = False
@@ -54,9 +56,6 @@ def login():
     return acceso
 
 
-    
- #MENU PRINCIPAL   
-
 def menu_principal():
       print("\033[1;33;44m----- MENU PRINCIPAL -----\033[0m")
       print("1. Registrar estudiante")
@@ -64,7 +63,8 @@ def menu_principal():
       print("3. Buscar estudiante")
       print("4. Modificar estudiante")
       print("5. Materias")
-      print("6. Salir")
+      print("6. Mostrar estudiantes en todas las materias")
+      print("7. Salir")
 
 def mostrar_menu_materias():
     print("Ingresando a Materias...")
@@ -85,17 +85,18 @@ def mostrar_submenu_materia(nombre_materia):
     print("4. Modificar Alumno")
     print("5. Modificar Nota")
     print("6. Volver")
-  
-#DATOS
+
 
 def registrar_estudiante():
     print("\033[34m------- REGISTRO DE ESTUDIANTE -------\033[0m")
 
     dni = input("Ingrese el DNI del estudiante: ")
 
-#VERIFICAR SI EL DNI YA ESTÁ REGISTRADO
+    if not re.match(r"^\d+$", dni):
+        print("\033[31mError: El DNI debe contener solo números.\033[0m")
+        return
 
-    if dni in estudiantes:
+    if dni in dnis_registrados:
         estudiante = estudiantes[dni]
 
         print("El estudiante ya está registrado.")
@@ -104,22 +105,19 @@ def registrar_estudiante():
         print("Legajo:", estudiante["legajo"])
         return
 
-#SI EL DNI NO ESTÁ REGISTRADO, PEDIMOS LOS DATOS DEL ESTUDIANTE PARA REGISTRARLO
     nombre = input("Ingrese el nombre del estudiante: ")
     apellido = input("Ingrese el apellido del estudiante: ")
 
-#ASIGNAR UN NUEVO LEGAJO
     legajo = len(estudiantes) + 1   
 
-    #CREAR AL ESTUDIANTE
     nuevo_estudiante = {
         "legajo": legajo,
         "nombre": nombre,
         "apellido": apellido
     }
 
-    #AGREGARLO A LA LISTA
     estudiantes[dni] = nuevo_estudiante
+    dnis_registrados.add(dni)
 
     print("\033[32mEstudiante registrado con éxito.\033[0m")
     print("Nombre:", nombre)
@@ -127,31 +125,34 @@ def registrar_estudiante():
     print("Legajo:", legajo)
 
 
-#ENCONTRAR ESTUDIANTE
-
 def listar_estudiantes():
     print("\033[34m------- LISTA DE ESTUDIANTES -------\033[0m")
+
+    if len(estudiantes) == 0:
+        print("No hay estudiantes registrados.")
+        return
+
     for dni, estudiante in estudiantes.items():
-      print("Legajo:", estudiante["legajo"], "| DNI:", dni, "| Nombre:", estudiante["nombre"], estudiante["apellido"])
+        print("Legajo:", estudiante["legajo"], "| DNI:", dni, "| Nombre:", estudiante["nombre"], estudiante["apellido"])
 
 def buscar_estudiante():
     print("\033[34m------- BUSCAR ESTUDIANTE -------\033[0m")
     dni = input("Ingrese el DNI a buscar: ")
-    if dni in estudiantes:
+
+    if dni in dnis_registrados:
         estudiante = estudiantes[dni]
+
         print("Estudiante encontrado:")
         print("Nombre:", estudiante["nombre"])
         print("Apellido:", estudiante["apellido"])
-        print("Legajo:", estudiante["legajo"]) 
-        
-    print("Estudiante no encontrado.")
+        print("Legajo:", estudiante["legajo"])
+    else:
+        print("Estudiante no encontrado.")
 
-
-#UPDATE Estudiante:
 
 def modificar_estudiante():
     dni = input("Ingrese el DNI del estudiante a modificar: ")
-    if dni in estudiantes:
+    if dni in dnis_registrados:
          estudiante = estudiantes[dni]
     
          print("Estudiante encontrado:")
@@ -159,43 +160,35 @@ def modificar_estudiante():
          print("Apellido:", estudiante["apellido"])
          print("Legajo:", estudiante["legajo"])
  
-            #PEDIR NUEVOS DATOS 
          nuevo_nombre = input("Ingrese el nuevo nombre del estudiante: ")
          nuevo_apellido = input("Ingrese el nuevo apellido del estudiante: ")
 
-            #ACTUALIZAR LOS DATOS DEL ESTUDIANTE
          estudiante["nombre"] = nuevo_nombre
          estudiante["apellido"] = nuevo_apellido
 
          print("Datos del estudiante actualizados con éxito.")
          return
-    else:
-         print("Estudiante no encontrado.")
+    
+    print("Estudiante no encontrado.")
 
 
-
-#AGREGAR ALUMNO A MATERIA
 def agregar_alumno_materia(materia):
 
     print("--- AGREGAR ALUMNO ---")
 
-    dni = input("Ingrese el DNI del estudiante: ") #buscamos el DNI del estuidante que queremos agregar
+    dni = input("Ingrese el DNI del estudiante: ")
 
-    #BUSCAMOS SI EL ESTUDIANTE EXISTE
     estudiante_encontrado = False
 
-    if dni in estudiantes: #¿DNI existe en estudiantes?
+    if dni in dnis_registrados:
 
-            estudiante_encontrado = True #DNI existe = estudiante encontrado
+            estudiante_encontrado = True
             estudiante = estudiantes[dni]
 
-            # VERIFICAR SI YA ESTA EN LA MATERIA
-            for alumno in materia ["alumnos"]: #rrecorremos la lista de alumnos en esa materia
-                if alumno["dni"] == dni:
-                    print("El estudiante ya esta agregado a esta materia.")
-                    return
+            if dni in materia["dnis"]:
+                print("El estudiante ya esta agregado a esta materia.")
+                return
 
-            # AGREGAR EL ESTUDIANTE A LA MATERIA
             nuevo_alumno = {
                 "dni": dni,
                 "legajo": estudiante["legajo"],
@@ -205,6 +198,8 @@ def agregar_alumno_materia(materia):
             }
 
             materia["alumnos"].append(nuevo_alumno)
+            materia["dnis"].add(dni)
+            alumnos_en_materias.add(dni)
 
             print("Alumno agregado correctamente a la materia.")
             print("Nombre:", estudiante["nombre"])
@@ -217,8 +212,6 @@ def agregar_alumno_materia(materia):
         print("El estudiante no esta registrado en el sistema.")
         print("Primero debe registrarlo desde el menu principal.")
 
-
-#LISTA ALUMNOS POR MATERIA
 
 def listar_alumnos_materia(lista_materia):
 
@@ -239,8 +232,6 @@ def listar_alumnos_materia(lista_materia):
             )
 
 
-#NOTAS POR MATERIA
-
 def mostrar_notas(lista_materia):
 
     print("----- NOTAS -----")
@@ -249,7 +240,7 @@ def mostrar_notas(lista_materia):
         print("No hay alumnos registrados en esta materia.")
 
     else:
-        for alumno in lista_materia: #esto va a ser "materia["alumnos"]"  en la opcion 2 en el menu
+        for alumno in lista_materia:
             print(
                 "Legajo:", alumno["legajo"],
                 "| Alumno:", alumno["nombre"],
@@ -257,8 +248,6 @@ def mostrar_notas(lista_materia):
                 "| Nota:", alumno["nota"]
             )
 
-
-# MODIFICAR ALUMNO
 
 def modificar_alumno_materia(lista_materia):
 
@@ -287,22 +276,20 @@ def modificar_alumno_materia(lista_materia):
     print("Alumno no encontrado en esta materia.")
 
 
-# MODIFICAR NOTAS
-
 def modificar_nota(lista_materia):
 
     print("----- MODIFICAR NOTA -----")
 
     dni = input("Ingrese el DNI del alumno: ")
 
-    for alumno in lista_materia: #buscamos al alumno dentro de la materia
+    for alumno in lista_materia:
 
         if alumno["dni"] == dni:
 
             print("Alumno:", alumno["nombre"], alumno["apellido"])
             print("Nota actual:", alumno["nota"])
 
-            nueva_nota = float(input("Ingrese la nueva nota: ")) #float para permitir notas decimales (con PUNTO, no con COMA)
+            nueva_nota = float(input("Ingrese la nueva nota: "))
 
             while nueva_nota < 0 or nueva_nota > 10:
                 print("La nota debe estar entre 0 y 10.")
@@ -317,7 +304,25 @@ def modificar_nota(lista_materia):
     print("Alumno no encontrado en esta materia.")
 
 
-#MENUS Y SUBMENUS
+def estudiantes_en_todas_las_materias():
+    print("----- ESTUDIANTES EN TODAS LAS MATERIAS -----")
+
+    dnis_comunes = (
+        materias["Matematicas"]["dnis"] &
+        materias["Lengua"]["dnis"] &
+        materias["Ciencias"]["dnis"] &
+        materias["Historia"]["dnis"] &
+        materias["Geografia"]["dnis"]
+    )
+
+    if len(dnis_comunes) == 0:
+        print("No hay estudiantes inscritos en todas las materias simultáneamente.")
+    else:
+        for dni in dnis_comunes:
+            estudiante = estudiantes[dni]
+            print("DNI:", dni, "| Nombre:", estudiante["nombre"], estudiante["apellido"])
+
+
 def menu_materia(nombre_materia, materia):
 
     opcion = 0
@@ -332,10 +337,10 @@ def menu_materia(nombre_materia, materia):
             listar_alumnos_materia(materia["alumnos"])
 
         elif opcion == 2:
-            mostrar_notas(materia["alumnos"]) #mostrar_notas() necesita recorrer los alumnos para poder mostrar la nota de cada uno.
+            mostrar_notas(materia["alumnos"])
 
         elif opcion == 3:
-            agregar_alumno_materia(materia) #esta función necesita la materia completa para poder agregar el alumno dentro de "alumnos"
+            agregar_alumno_materia(materia)
 
         elif opcion == 4:
             modificar_alumno_materia(materia["alumnos"])
@@ -350,7 +355,6 @@ def menu_materia(nombre_materia, materia):
             print("Ingrese una opcion valida.")
 
 
-#MENU MATERIAS
 def menu_materias():
 
     opcion = 0
@@ -381,11 +385,8 @@ def menu_materias():
 
         else:
             print("Ingrese una opcion valida.")
-            
-        
 
-    
-#EEJECUCION DEL SISTEMA:
+
 def ejecutar_sistema():
     acceso = login()
 
@@ -394,7 +395,7 @@ def ejecutar_sistema():
 
         opcion = 0
 
-        while opcion != 6:
+        while opcion != 7:
             menu_principal()
             opcion = int(input("Ingrese una opcion:"))
 
@@ -409,12 +410,12 @@ def ejecutar_sistema():
             elif opcion == 5:
                 menu_materias()  
             elif opcion == 6:
+                estudiantes_en_todas_las_materias()
+            elif opcion == 7:
                 print("Saliendo del sistema..")
 
     else:
         print ("Ingrese un numero valido")
-            
 
 
-#ejecucion del sistema
 ejecutar_sistema()
