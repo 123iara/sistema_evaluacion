@@ -2,134 +2,312 @@
 #responsabilidad del ingreso y salida de datos por consola.
 
 from login_general.login import verificar_credenciales
-from modulos_.alumnos_CRUD import crear_estudiante, obtener_todos_estudiantes, buscar_estudiante_por_dni, modificar_datos_estudiante
-from modulos_.materias_CRUD import agregar_alumno_materia, obtener_alumnos_materia
-from modulos_.notas_CRUD import actualizar_nota, obtener_notas
+from modulos_.alumnos_CRUD import crear_estudiante, obtener_todos_estudiantes, buscar_estudiante_por_dni, modificar_datos_estudiante, eliminar_estudiante
+from modulos_.materias_CRUD import crear_materia, listar_materias, modificar_materia, eliminar_materia, agregar_alumno_materia, obtener_alumnos_materia
+from modulos_.notas_CRUD import agregar_nota, obtener_notas, modificar_nota, eliminar_nota
+
+# LOGIN
 
 def login():
+    acceso = False
     intentos = 3
-    while intentos > 0:
+
+    while intentos > 0 and acceso == False:
         print("\033[4;35m---------- LOGIN ----------\033[0m")
         usuario = input("Usuario: ")
-        contrasena = input("Contraseña: ")
+        contrasena = input("Contrasena: ")
 
         if verificar_credenciales(usuario, contrasena):
+            acceso = True
             print("\033[32mIngreso correcto al sistema.\033[0m")
-            return True
         else:
-            intentos -= 1
-            print("\033[31mUsuario o contraseña incorrectos.\033[0m")
-            print(f"\033[33mIntentos restantes:\033[0m {intentos}")
-    return False
+            intentos = intentos - 1
+            print("\033[31mUsuario o contrasena incorrectos.\033[0m")
+            print("\033[33mIntentos restantes:\033[0m", intentos)
 
-def menu_estudiantes():
-    print("\033[1;33;44m----- MENU ESTUDIANTES -----\033[0m")
-    print("1. Registrar estudiante")
-    print("2. Lista estudiantes")
-    print("3. Buscar estudiante")
-    print("4. Modificar estudiante")
-    print("5. Volver")
-    
-    opcion = input("Ingrese una opción: ")
-    
-    if opcion == "1":
-        dni = input("Ingrese el DNI: ")
-        nombre = input("Nombre: ")
-        apellido = input("Apellido: ")
-        exito, msj = crear_estudiante(dni, nombre, apellido)
+    return acceso
+
+#MENU PRINCIPAL   
+
+def menu_principal():
+      print("\033[1;33;44m----- MENU PRINCIPAL -----\033[0m")
+      print("1. Registrar estudiante")
+      print("2. Lista estudiantes")
+      print("3. Buscar estudiante")
+      print("4. Modificar estudiante")
+      print("5. Eliminar estudiante") # Agregado por corrección
+      print("6. Gestion de Materias") # Modificado para CRUD materias
+      print("7. Salir")
+
+def mostrar_menu_materias():
+    print("Ingresando a Materias...")
+    print("----- MATERIAS -----")
+    print("1. Crear Materia")
+    print("2. Ver Materias")
+    print("3. Renombrar Materia")
+    print("4. Eliminar Materia")
+    print("5. Menu de Cursada y Notas") # Para entrar a la gestión de alumnos
+    print("6. Volver al menu principal")
+
+def mostrar_submenu_materia(nombre_materia):
+    print("-----", nombre_materia, "-----")
+    print("1. Lista Alumnos")
+    print("2. Ver Notas")
+    print("3. Agregar Alumno")
+    print("4. Agregar Nota") 
+    print("5. Modificar Nota")
+    print("6. Eliminar Nota")
+    print("7. Volver")
+
+
+#DATOS (Registro)
+
+def registrar_estudiante():
+    print("\033[34m------- REGISTRO DE ESTUDIANTE -------\033[0m")
+    dni = input("Ingrese el DNI del estudiante: ")
+
+    #SI EL DNI NO ESTÁ REGISTRADO, PEDIMOS LOS DATOS DEL ESTUDIANTE PARA REGISTRARLO
+    nombre = input("Ingrese el nombre del estudiante: ")
+    apellido = input("Ingrese el apellido del estudiante: ")
+
+    exito, msj = crear_estudiante(dni, nombre, apellido)
+    if exito:
+        print("\033[32m" + msj + "\033[0m")
+        print("Nombre:", nombre)
+        print("Apellido:", apellido)
+    else:
         print(msj)
-        
-    elif opcion == "2":
-        estudiantes = obtener_todos_estudiantes()
-        if not estudiantes:
-            print("No hay estudiantes registrados.")
+
+
+#ENCONTRAR ESTUDIANTE
+
+def listar_estudiantes():
+    print("\033[34m------- LISTA DE ESTUDIANTES -------\033[0m")
+    estudiantes = obtener_todos_estudiantes()
+    if not estudiantes:
+         print("No hay estudiantes registrados.")
+    else:
+        for dni, estudiante in estudiantes.items():
+            print("Legajo:", estudiante["legajo"], "| DNI:", dni, "| Nombre:", estudiante["nombre"], estudiante["apellido"])
+
+def buscar_estudiante():
+    print("\033[34m------- BUSCAR ESTUDIANTE -------\033[0m")
+    dni = input("Ingrese el DNI a buscar: ")
+    encontrado, datos = buscar_estudiante_por_dni(dni)
+    if encontrado:
+        print("Estudiante encontrado:")
+        print("Nombre:", datos["nombre"])
+        print("Apellido:", datos["apellido"])
+        print("Legajo:", datos["legajo"]) 
+    else:
+        print(datos) # Estudiante no encontrado.
+
+
+#UPDATE Estudiante:
+
+def modificar_estudiante():
+    dni = input("Ingrese el DNI del estudiante a modificar: ")
+    encontrado, datos = buscar_estudiante_por_dni(dni)
+    
+    if encontrado:
+         print("Estudiante encontrado:")
+         print("Nombre:", datos["nombre"])
+         print("Apellido:", datos["apellido"])
+         print("Legajo:", datos["legajo"])
+ 
+         #PEDIR NUEVOS DATOS 
+         nuevo_nombre = input("Ingrese el nuevo nombre del estudiante: ")
+         nuevo_apellido = input("Ingrese el nuevo apellido del estudiante: ")
+
+         exito, msj = modificar_datos_estudiante(dni, nuevo_nombre, nuevo_apellido)
+         print(msj)
+    else:
+         print("Estudiante no encontrado.")
+
+# Agregado para cumplir la corrección
+def eliminar_estudiante_menu():
+    dni = input("Ingrese el DNI del estudiante a eliminar: ")
+    exito, msj = eliminar_estudiante(dni)
+    print(msj)
+
+
+#AGREGAR ALUMNO A MATERIA
+def agregar_alumno_materia_menu(materia_seleccionada):
+    print("--- AGREGAR ALUMNO ---")
+    dni = input("Ingrese el DNI del estudiante: ") #buscamos el DNI del estuidante que queremos agregar
+    exito, msj = agregar_alumno_materia(materia_seleccionada, dni)
+    print(msj)
+
+#LISTA ALUMNOS POR MATERIA
+
+def listar_alumnos_materia_menu(materia_seleccionada):
+    print("----- LISTA DE ALUMNOS -----")
+    alumnos = obtener_alumnos_materia(materia_seleccionada)
+    if len(alumnos) == 0:
+        print("No hay alumnos registrados en esta materia.")
+    else:
+        for alumno in alumnos:
+            print("Legajo:", alumno["legajo"], "| DNI:", alumno["dni"], "| Nombre:", alumno["nombre"], alumno["apellido"])
+
+
+#NOTAS POR MATERIA
+
+def mostrar_notas_menu(materia_seleccionada):
+    print("----- NOTAS -----")
+    dni = input("Ingrese DNI del alumno: ")
+    encontrado, notas = obtener_notas(materia_seleccionada, dni)
+    
+    if encontrado:
+        if len(notas) == 0:
+             print("No hay notas registradas para este alumno.")
         else:
-            for dni, est in estudiantes.items():
-                print(f"Legajo: {est['legajo']} | DNI: {dni} | {est['nombre']} {est['apellido']}")
-                
-    elif opcion == "3":
-        dni = input("Ingrese el DNI a buscar: ")
-        encontrado, datos = buscar_estudiante_por_dni(dni)
-        if encontrado:
-            print(f"Estudiante: {datos['nombre']} {datos['apellido']} (Legajo {datos['legajo']})")
-        else:
-            print(datos) # Muestra el mensaje de error
-            
-    elif opcion == "4":
-        dni = input("Ingrese el DNI a modificar: ")
-        encontrado, datos = buscar_estudiante_por_dni(dni)
-        if encontrado:
-            nuevo_nombre = input("Nuevo nombre: ")
-            nuevo_apellido = input("Nuevo apellido: ")
-            exito, msj = modificar_datos_estudiante(dni, nuevo_nombre, nuevo_apellido)
-            print(msj)
-        else:
-            print("Estudiante no encontrado.")
-            
-def menu_materia_individual(nombre_materia):
+             for i, n in enumerate(notas):
+                 print(f"[{i}] - Nota: {n}")
+    else:
+        print(notas) # Imprime "Alumno no encontrado"
+
+def agregar_nota_menu(materia_seleccionada):
+    print("----- AGREGAR NOTA -----")
+    dni = input("Ingrese el DNI del alumno: ")
+    try:
+        nueva_nota = float(input("Ingrese la nueva nota: ")) #float para permitir notas decimales
+        exito, msj = agregar_nota(materia_seleccionada, dni, nueva_nota)
+        print(msj)
+    except ValueError:
+        print("Error: Ingrese un valor numerico.")
+
+# MODIFICAR NOTAS
+
+def modificar_nota_menu(materia_seleccionada):
+    print("----- MODIFICAR NOTA -----")
+    dni = input("Ingrese el DNI del alumno: ")
+    try:
+        indice = int(input("Ingrese el numero entre corchetes [ ] de la nota a modificar: "))
+        nueva_nota = float(input("Ingrese la nueva nota: ")) #float para permitir notas decimales
+        exito, msj = modificar_nota(materia_seleccionada, dni, indice, nueva_nota)
+        print(msj)
+    except ValueError:
+        print("Error: Ingrese valores numericos.")
+
+def eliminar_nota_menu(materia_seleccionada):
+    print("----- ELIMINAR NOTA -----")
+    dni = input("Ingrese el DNI del alumno: ")
+    try:
+        indice = int(input("Ingrese el numero entre corchetes [ ] de la nota a eliminar: "))
+        exito, msj = eliminar_nota(materia_seleccionada, dni, indice)
+        print(msj)
+    except ValueError:
+        print("Error: Ingrese valores numericos.")
+
+
+#MENUS Y SUBMENUS
+
+def menu_materia(nombre_materia):
     opcion = 0
-    while str(opcion) != "5":
-        print(f"\033[1;36m----- {nombre_materia} -----\033[0m")
-        print("1. Agregar Alumno a la materia")
-        print("2. Lista Alumnos en la materia")
-        print("3. Modificar Nota")
-        print("4. Ver Notas")
-        print("5. Volver")
-        
-        opcion = input("Opción: ")
-        
-        if opcion == "1":
-            dni = input("DNI del estudiante a agregar: ")
-            exito, msj = agregar_alumno_materia(nombre_materia, dni)
-            print(msj)
+    while opcion != 7:
+        mostrar_submenu_materia(nombre_materia)
+        try:
+            opcion = int(input("Ingrese una opcion: "))
             
-        elif opcion == "2":
-            alumnos = obtener_alumnos_materia(nombre_materia)
-            if not alumnos:
-                print("No hay alumnos en esta materia.")
+            if opcion == 1:
+                listar_alumnos_materia_menu(nombre_materia)
+            elif opcion == 2:
+                mostrar_notas_menu(nombre_materia) 
+            elif opcion == 3:
+                agregar_alumno_materia_menu(nombre_materia) 
+            elif opcion == 4:
+                agregar_nota_menu(nombre_materia)
+            elif opcion == 5:
+                modificar_nota_menu(nombre_materia)
+            elif opcion == 6:
+                eliminar_nota_menu(nombre_materia)
+            elif opcion == 7:
+                print("Volviendo...")
             else:
-                for al in alumnos:
-                    print(f"DNI: {al['dni']} | {al['nombre']} {al['apellido']}")
-                    
-        elif opcion == "3":
-            dni = input("DNI del estudiante: ")
-            try:
-                nota = float(input("Nueva nota (0-10): "))
-                exito, msj = actualizar_nota(nombre_materia, dni, nota)
+                print("Ingrese una opcion valida.")
+        except ValueError:
+             print("Error: Ingrese un numero valido.")
+
+
+#MENU MATERIAS
+def menu_materias():
+    opcion = 0
+    while opcion != 6:
+        mostrar_menu_materias()
+        try:
+            opcion = int(input("Ingrese una opcion: "))
+
+            if opcion == 1:
+                nombre = input("Nombre de la nueva materia: ")
+                exito, msj = crear_materia(nombre)
                 print(msj)
-            except ValueError:
-                print("Por favor, ingrese un número válido.")
-                
-        elif opcion == "4":
-            alumnos = obtener_notas(nombre_materia)
-            if not alumnos:
-                print("No hay alumnos calificados.")
-            else:
-                for al in alumnos:
-                    print(f"Alumno: {al['nombre']} {al['apellido']} | Nota: {al['nota']}")
-
-def ejecutar_sistema():
-    if login():
-        opcion = "0"
-        while opcion != "3":
-            print("\033[1;33;44m----- MENU PRINCIPAL -----\033[0m")
-            print("1. Gestión de Estudiantes Global")
-            print("2. Gestión de Materias y Notas")
-            print("3. Salir")
-            opcion = input("Opción: ")
-
-            if opcion == "1":
-                menu_estudiantes()
-            elif opcion == "2":
-                print("1. Matematicas | 2. Lengua | 3. Ciencias | 4. Historia | 5. Geografia")
-                mat_op = input("Seleccione número de materia: ")
-                materias_map = {"1": "Matematicas", "2": "Lengua", "3": "Ciencias", "4": "Historia", "5": "Geografia"}
-                if mat_op in materias_map:
-                    menu_materia_individual(materias_map[mat_op])
+            elif opcion == 2:
+                materias = listar_materias()
+                if not materias:
+                     print("No hay materias.")
                 else:
-                    print("Opción inválida.")
-            elif opcion == "3":
-                print("Saliendo del sistema...")
+                     print("Materias: ", materias)
+            elif opcion == 3:
+                viejo = input("Nombre actual: ")
+                nuevo = input("Nuevo nombre: ")
+                exito, msj = modificar_materia(viejo, nuevo)
+                print(msj)
+            elif opcion == 4:
+                nombre = input("Nombre a eliminar: ")
+                exito, msj = eliminar_materia(nombre)
+                print(msj)
+            elif opcion == 5:
+                materias = listar_materias()
+                if not materias:
+                    print("Cree una materia primero.")
+                else:
+                    print("Materias disponibles:", materias)
+                    mat_seleccion = input("Escriba el nombre de la materia para ingresar: ").strip().capitalize()
+                    if mat_seleccion in materias:
+                        menu_materia(mat_seleccion)
+                    else:
+                        print("Materia no encontrada.")
+            elif opcion == 6:
+                print("Volviendo al menu principal...")
+            else:
+                print("Ingrese una opcion valida.")
+        except ValueError:
+             print("Error: Ingrese un numero valido.")
+                
 
-if __name__ == "__main__":
-    ejecutar_sistema()
+    
+#EJECUCION DEL SISTEMA:
+def ejecutar_sistema():
+    acceso = login()
+
+    if acceso == True:
+        print( "Acceso al sistema permitido")
+
+        opcion = 0
+
+        while opcion != 7:
+            menu_principal()
+            try:
+                opcion = int(input("Ingrese una opcion:"))
+
+                if opcion == 1:
+                    registrar_estudiante()
+                elif opcion == 2:
+                    listar_estudiantes()
+                elif opcion == 3:
+                    buscar_estudiante()
+                elif opcion == 4:
+                    modificar_estudiante()
+                elif opcion == 5:
+                    eliminar_estudiante_menu()
+                elif opcion == 6:
+                    menu_materias()  
+                elif opcion == 7:
+                    print("Saliendo del sistema..")
+                else:
+                    print("Ingrese una opcion valida.")
+            except ValueError:
+                print("Ingrese un numero valido")
+
+    else:
+        print ("Se agotaron los intentos.")
