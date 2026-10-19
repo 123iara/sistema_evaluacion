@@ -1,13 +1,7 @@
-import logica
-import menu
+#Importacion de la funcion principal del sistema desde "menu.py"
+#y ejecucion.
 
-ARCHIVO_ESTUDIANTES = 'estudiantes.csv'
-ARCHIVO_MATERIAS = 'materias.csv'
+from menus import ejecutar_sistema
 
-estudiantes = logica.cargar_estudiantes(ARCHIVO_ESTUDIANTES)
-materias = logica.cargar_materias(ARCHIVO_MATERIAS)
-
-menu.principal(estudiantes, materias)
-
-logica.guardar_estudiantes(ARCHIVO_ESTUDIANTES, estudiantes)
-logica.guardar_materias(ARCHIVO_MATERIAS, materias)
+if __name__ == "__main__":
+    ejecutar_sistema()
