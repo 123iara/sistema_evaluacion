@@ -5,6 +5,9 @@ from login_general.login import verificar_credenciales
 from modulos_.alumnos_CRUD import crear_estudiante, obtener_todos_estudiantes, buscar_estudiante_por_dni, modificar_datos_estudiante, eliminar_estudiante
 from modulos_.materias_CRUD import crear_materia, listar_materias, modificar_materia, eliminar_materia, agregar_alumno_materia, obtener_alumnos_materia
 from modulos_.notas_CRUD import agregar_nota, obtener_notas, modificar_nota, eliminar_nota
+from modulos_.matrices_busquedas import crear_matriz_notas, buscar_notas_estudiante
+from modulos_.estadisticas import estadisticas_materia
+
 
 # LOGIN
 
@@ -36,9 +39,11 @@ def menu_principal():
       print("3. Buscar estudiante")
       print("4. Modificar estudiante")
       print("5. Eliminar estudiante") # Agregado por corrección
-      print("6. Gestion de Materias") # Modificado para CRUD materias
-      print("7. Salir")
-
+      print("6. Gestion de Materias")
+      print("7. Mostrar matriz de calificaciones")
+      print("8. Buscar materias y notas de un estudiante")
+      print("9. Estadisticas academicas")
+      print("10. Salir")
 def mostrar_menu_materias():
     print("Ingresando a Materias...")
     print("----- MATERIAS -----")
@@ -89,6 +94,79 @@ def listar_estudiantes():
     else:
         for dni, estudiante in estudiantes.items():
             print("Legajo:", estudiante["legajo"], "| DNI:", dni, "| Nombre:", estudiante["nombre"], estudiante["apellido"])
+
+
+def mostrar_matriz_notas():
+    print("----- MATRIZ DE CALIFICACIONES -----")
+
+    matriz = crear_matriz_notas()
+
+    if len(matriz) == 0:
+        print("No hay calificaciones registradas.")
+    else:
+        for fila in matriz:
+            print(fila)
+
+
+def mostrar_busqueda_notas():
+    print("----- BUSQUEDA DE NOTAS POR ESTUDIANTE -----")
+
+    dni = input("Ingrese el DNI del estudiante: ")
+    resultados = buscar_notas_estudiante(dni)
+
+    if len(resultados) == 0:
+        print("No se encontraron materias para ese estudiante.")
+    else:
+        for resultado in resultados:
+            print("Materia:", resultado[0])
+            print("Notas:", resultado[1])
+            print("--------------------")
+
+
+
+# ESTADISTICAS ACADEMICAS
+def mostrar_estadisticas():
+    print("----- ESTADISTICAS ACADEMICAS -----")
+
+    materias_disponibles = listar_materias()
+
+    if len(materias_disponibles) == 0:
+        print("No hay materias registradas.")
+        return
+
+    print("Materias disponibles:", materias_disponibles)
+
+    nombre = input("Ingrese el nombre de la materia: ")
+    nombre = nombre.strip().capitalize()
+
+    if nombre not in materias_disponibles:
+        print("Materia no encontrada.")
+        return
+
+    resultados = estadisticas_materia(nombre)
+
+    if resultados is None:
+        print("No hay alumnos con notas registradas.")
+    else:
+        print("Materia:", nombre)
+        print("Promedio general:", round(resultados[0], 2))
+        print("Alumnos aprobados:", resultados[1])
+        print("Alumnos desaprobados:", resultados[2])
+        print(
+            "Porcentaje con promedio alto:",
+            round(resultados[3], 2), "%"
+        )
+
+
+
+
+
+
+
+
+
+
+
 
 def buscar_estudiante():
     print("\033[34m------- BUSCAR ESTUDIANTE -------\033[0m")
@@ -285,7 +363,7 @@ def ejecutar_sistema():
 
         opcion = 0
 
-        while opcion != 7:
+        while opcion != 9:
             menu_principal()
             try:
                 opcion = int(input("Ingrese una opcion:"))
@@ -300,12 +378,22 @@ def ejecutar_sistema():
                     modificar_estudiante()
                 elif opcion == 5:
                     eliminar_estudiante_menu()
+                
                 elif opcion == 6:
-                    menu_materias()  
+                     menu_materias()
+
                 elif opcion == 7:
-                    print("Saliendo del sistema..")
-                else:
-                    print("Ingrese una opcion valida.")
+                     mostrar_matriz_notas()
+
+                elif opcion == 8:
+                     mostrar_busqueda_notas()
+
+                elif opcion == 9:
+                     mostrar_estadisticas()
+
+                elif opcion == 10:
+                     print("Saliendo del sistema..")
+                
             except ValueError:
                 print("Ingrese un numero valido")
 
