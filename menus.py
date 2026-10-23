@@ -175,6 +175,10 @@ def mostrar_estadisticas():
         print("Promedio general del grupo:", round(general["promedio_general"], 2))
         print("Notas registradas:", general["cantidad_notas"])
         print("Aprobados / desaprobados:", general["aprobados"], "/", general["desaprobados"])
+        print("Porcentaje con promedio alto:", round(general["porcentaje_altos"], 2), "%")
+        print("Nota mínima del grupo:", general["nota_minima"])
+        print("Nota máxima del grupo:", general["nota_maxima"])
+        print("Resumen general:", general["resumen"])
 
 
 

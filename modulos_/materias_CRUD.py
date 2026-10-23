@@ -46,11 +46,12 @@ def agregar_alumno_materia(nombre_materia, dni):
         return False, "Materia no encontrada."
     
     #DNI existe = estudiante encontrado
-    # VERIFICAR SI YA ESTA EN LA MATERIA
-    #rrecorremos la lista de alumnos en esa materia
-    for alumno in materias[nombre_materia]["alumnos"]:
-        if alumno["dni"] == dni:
-            return False, "El estudiante ya está inscripto en esta materia."
+    # El conjunto permite comprobar de forma directa si ya está inscripto.
+    dnis_inscriptos = {
+        alumno["dni"] for alumno in materias[nombre_materia]["alumnos"]
+    }
+    if dni in dnis_inscriptos:
+        return False, "El estudiante ya está inscripto en esta materia."
 
     # AGREGAR EL ESTUDIANTE A LA MATERIA
     estudiante = estudiantes[dni]
