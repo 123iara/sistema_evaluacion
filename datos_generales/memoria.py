@@ -8,6 +8,13 @@ USERYCONT = (
     ("user2", "4321")
 )
 
+# Roles asociados a las cuentas de ejemplo del sistema.
+ROLES = {
+    "admin": "administrador",
+    "user": "usuario",
+    "user2": "usuario",
+}
+
 #DICCIONARIO de estudiantes
 estudiantes = {}
 

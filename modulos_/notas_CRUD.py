@@ -1,6 +1,7 @@
 #Crear, Leer, Actualizar y Borrar notas de alumnos en materias
 
 from datos_generales.memoria import materias
+from datos_generales.persistencia import guardar_datos
 
 #NOTAS POR MATERIA
 def agregar_nota(nombre_materia, dni, nota):
@@ -11,6 +12,7 @@ def agregar_nota(nombre_materia, dni, nota):
     for alumno in materias.get(nombre_materia, {}).get("alumnos", []):
         if alumno["dni"] == dni:
             alumno["notas"].append(nota)
+            guardar_datos()
             return True, "Nota agregada correctamente."
             
     return False, "Alumno no encontrado en esta materia."
@@ -30,6 +32,7 @@ def modificar_nota(nombre_materia, dni, indice, nueva_nota):
         if alumno["dni"] == dni:
             if 0 <= indice < len(alumno["notas"]):
                 alumno["notas"][indice] = nueva_nota
+                guardar_datos()
                 return True, "Nota modificada."
             return False, "Índice de nota incorrecto."
     return False, "Alumno no encontrado."
@@ -39,6 +42,7 @@ def eliminar_nota(nombre_materia, dni, indice):
         if alumno["dni"] == dni:
             if 0 <= indice < len(alumno["notas"]):
                 del alumno["notas"][indice]
+                guardar_datos()
                 return True, "Nota eliminada."
             return False, "Índice de nota incorrecto."
     return False, "Alumno no encontrado."

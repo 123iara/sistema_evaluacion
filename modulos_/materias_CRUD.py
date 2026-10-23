@@ -2,12 +2,14 @@
 
 
 from datos_generales.memoria import materias, estudiantes
+from datos_generales.persistencia import guardar_datos
 
 def crear_materia(nombre):
     nombre = nombre.strip().capitalize()
     if nombre in materias:
         return False, "La materia ya existe."
     materias[nombre] = {"alumnos": []}
+    guardar_datos()
     return True, "Materia creada con éxito."
 
 def listar_materias():
@@ -23,12 +25,14 @@ def modificar_materia(nombre_actual, nombre_nuevo):
         return False, "El nuevo nombre ya está ocupado."
     
     materias[nombre_nuevo] = materias.pop(nombre_actual)
+    guardar_datos()
     return True, "Nombre de materia actualizado."
 
 def eliminar_materia(nombre):
     nombre = nombre.strip().capitalize()
     if nombre in materias:
         del materias[nombre]
+        guardar_datos()
         return True, "Materia eliminada del sistema."
     return False, "Materia no encontrada."
 
@@ -58,6 +62,7 @@ def agregar_alumno_materia(nombre_materia, dni):
         "notas": [] 
     }
     materias[nombre_materia]["alumnos"].append(nuevo_alumno)
+    guardar_datos()
     return True, "Alumno inscripto correctamente."
 
 #LISTA ALUMNOS POR MATERIA

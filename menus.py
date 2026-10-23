@@ -1,49 +1,57 @@
 #Aca se importa la logica desde los modulos CRUD y el Login
 #responsabilidad del ingreso y salida de datos por consola.
 
-from login_general.login import verificar_credenciales
+from login_general.login import verificar_credenciales, obtener_rol
+from datos_generales.persistencia import cargar_datos
 from modulos_.alumnos_CRUD import crear_estudiante, obtener_todos_estudiantes, buscar_estudiante_por_dni, modificar_datos_estudiante, eliminar_estudiante
 from modulos_.materias_CRUD import crear_materia, listar_materias, modificar_materia, eliminar_materia, agregar_alumno_materia, obtener_alumnos_materia
 from modulos_.notas_CRUD import agregar_nota, obtener_notas, modificar_nota, eliminar_nota
 from modulos_.matrices_busquedas import crear_matriz_notas, buscar_notas_estudiante
-from modulos_.estadisticas import estadisticas_materia
+from modulos_.estadisticas import estadisticas_materia, estadisticas_generales
 
 
 # LOGIN
 
 def login():
-    acceso = False
     intentos = 3
 
-    while intentos > 0 and acceso == False:
+    while intentos > 0:
         print("\033[4;35m---------- LOGIN ----------\033[0m")
         usuario = input("Usuario: ")
         contrasena = input("Contrasena: ")
 
         if verificar_credenciales(usuario, contrasena):
-            acceso = True
             print("\033[32mIngreso correcto al sistema.\033[0m")
+            return usuario
         else:
             intentos = intentos - 1
             print("\033[31mUsuario o contrasena incorrectos.\033[0m")
             print("\033[33mIntentos restantes:\033[0m", intentos)
 
-    return acceso
+    return None
 
 #MENU PRINCIPAL   
 
-def menu_principal():
+def menu_principal(rol):
       print("\033[1;33;44m----- MENU PRINCIPAL -----\033[0m")
-      print("1. Registrar estudiante")
-      print("2. Lista estudiantes")
-      print("3. Buscar estudiante")
-      print("4. Modificar estudiante")
-      print("5. Eliminar estudiante") # Agregado por corrección
-      print("6. Gestion de Materias")
-      print("7. Mostrar matriz de calificaciones")
-      print("8. Buscar materias y notas de un estudiante")
-      print("9. Estadisticas academicas")
-      print("10. Salir")
+      if rol == "administrador":
+          print("1. Registrar estudiante")
+          print("2. Lista estudiantes")
+          print("3. Buscar estudiante")
+          print("4. Modificar estudiante")
+          print("5. Eliminar estudiante")
+          print("6. Gestion de Materias")
+          print("7. Mostrar matriz de calificaciones")
+          print("8. Buscar materias y notas de un estudiante")
+          print("9. Estadisticas academicas")
+          print("10. Salir")
+      else:
+          print("1. Lista estudiantes")
+          print("2. Buscar estudiante")
+          print("3. Mostrar matriz de calificaciones")
+          print("4. Buscar materias y notas de un estudiante")
+          print("5. Estadisticas academicas")
+          print("6. Salir")
 def mostrar_menu_materias():
     print("Ingresando a Materias...")
     print("----- MATERIAS -----")
@@ -149,13 +157,24 @@ def mostrar_estadisticas():
         print("No hay alumnos con notas registradas.")
     else:
         print("Materia:", nombre)
-        print("Promedio general:", round(resultados[0], 2))
-        print("Alumnos aprobados:", resultados[1])
-        print("Alumnos desaprobados:", resultados[2])
+        print("Promedio general:", round(resultados["promedio_general"], 2))
+        print("Alumnos aprobados:", resultados["aprobados"])
+        print("Alumnos desaprobados:", resultados["desaprobados"])
         print(
             "Porcentaje con promedio alto:",
-            round(resultados[3], 2), "%"
+            round(resultados["porcentaje_altos"], 2), "%"
         )
+        print("Cantidad de notas:", resultados["cantidad_notas"])
+        print("Nota mínima:", resultados["nota_minima"])
+        print("Nota máxima:", resultados["nota_maxima"])
+        print("Resumen:", resultados["resumen"])
+
+    general = estadisticas_generales()
+    if general:
+        print("----- RESUMEN GENERAL -----")
+        print("Promedio general del grupo:", round(general["promedio_general"], 2))
+        print("Notas registradas:", general["cantidad_notas"])
+        print("Aprobados / desaprobados:", general["aprobados"], "/", general["desaprobados"])
 
 
 
@@ -356,46 +375,46 @@ def menu_materias():
     
 #EJECUCION DEL SISTEMA:
 def ejecutar_sistema():
-    acceso = login()
-
-    if acceso == True:
-        print( "Acceso al sistema permitido")
-
-        opcion = 0
-
-        while opcion != 9:
-            menu_principal()
-            try:
-                opcion = int(input("Ingrese una opcion:"))
-
-                if opcion == 1:
-                    registrar_estudiante()
-                elif opcion == 2:
-                    listar_estudiantes()
-                elif opcion == 3:
-                    buscar_estudiante()
-                elif opcion == 4:
-                    modificar_estudiante()
-                elif opcion == 5:
-                    eliminar_estudiante_menu()
-                
-                elif opcion == 6:
-                     menu_materias()
-
-                elif opcion == 7:
-                     mostrar_matriz_notas()
-
-                elif opcion == 8:
-                     mostrar_busqueda_notas()
-
-                elif opcion == 9:
-                     mostrar_estadisticas()
-
-                elif opcion == 10:
-                     print("Saliendo del sistema..")
-                
-            except ValueError:
-                print("Ingrese un numero valido")
-
-    else:
+    cargar_datos()
+    usuario = login()
+    if usuario is None:
         print ("Se agotaron los intentos.")
+        return
+
+    rol = obtener_rol(usuario)
+    print("Acceso permitido. Perfil:", rol)
+    opcion = 0
+    salir = 10 if rol == "administrador" else 6
+
+    while opcion != salir:
+        menu_principal(rol)
+        try:
+            opcion = int(input("Ingrese una opcion: "))
+            if rol == "administrador":
+                acciones = {
+                    1: registrar_estudiante,
+                    2: listar_estudiantes,
+                    3: buscar_estudiante,
+                    4: modificar_estudiante,
+                    5: eliminar_estudiante_menu,
+                    6: menu_materias,
+                    7: mostrar_matriz_notas,
+                    8: mostrar_busqueda_notas,
+                    9: mostrar_estadisticas,
+                }
+            else:
+                acciones = {
+                    1: listar_estudiantes,
+                    2: buscar_estudiante,
+                    3: mostrar_matriz_notas,
+                    4: mostrar_busqueda_notas,
+                    5: mostrar_estadisticas,
+                }
+            if opcion == salir:
+                print("Saliendo del sistema...")
+            elif opcion in acciones:
+                acciones[opcion]()
+            else:
+                print("Ingrese una opcion disponible para su perfil.")
+        except ValueError:
+            print("Ingrese un numero valido")
