@@ -18,40 +18,37 @@ def calcular_promedio(notas):
 # ESTADISTICAS POR MATERIA
 def estadisticas_materia(nombre_materia):
     if nombre_materia not in materias:
-        return None
+        return False, "La materia no tiene alumnos registrados."
 
     alumnos = materias[nombre_materia]["alumnos"]
 
-    aprobados = 0
-    desaprobados = 0
-    promedios_altos = 0
-    suma_promedios = 0
-    cantidad = 0
+    if len(alumnos) == 0:
+         return False, "La materia no tiene alumnos para generar estadisticas."
 
-    for alumno in alumnos:
-        promedio = calcular_promedio(alumno["notas"])
+    # Lista que contenga unicamente los promedios calculados de todos los alumnos (Listas por Comprensión)
+    promedios = [calcular_promedio(alumno["notas"]) for alumno in alumnos if calcular_promedio(alumno["notas"]) is not None]
+    cantidad_calificados = len(promedios)
 
-        if promedio is not None:
-            suma_promedios += promedio
-            cantidad += 1
+    if cantidad_calificados == 0:
+         return False, "Los alumnos inscriptos aún no tienen notas cargadas."
 
-            if promedio >= 4:
-                aprobados += 1
-            else:
-                desaprobados += 1
+    #Lista por Comprension para saber los alumnos que aprobaron y desaprobaron
+    aprobados = len([p for p in promedios if p >= 4])
+    desaprobados = cantidad_calificados - aprobados
 
-            if promedio >= 8:
-                promedios_altos += 1
+    #Lista por Comprension para saber los alumnos que tienen promedio mayor o igual a 8
+    promedios_altos = len([p for p in promedios if p >= 8])
+    porcentaje_altos = (promedios_altos * 100) / cantidad_calificados
 
-    if cantidad == 0:
-        return None
+    # Devolvemos el diccionario prolijo
+    resultado = {
+        "aprobados": aprobados,
+        "desaprobados": desaprobados,
+        "porcentaje_altos": porcentaje_altos,
+        "total_calificados": cantidad_calificados
+    }
+    
+    return True, resultado
 
-    promedio_general = suma_promedios / cantidad
-    porcentaje_altos = promedios_altos * 100 / cantidad
 
-    return [
-        promedio_general,
-        aprobados,
-        desaprobados,
-        porcentaje_altos
-    ]
+    

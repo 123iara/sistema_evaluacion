@@ -65,3 +65,18 @@ def buscar_notas_estudiante(dni):
                 ])
 
     return resultados
+
+#Creamos matriz para slicing que usaremos en el menu (para mostrar solo los datos personales de los alumnos)
+def obtener_datos_personales_matriz():
+    """Extrae solo los datos personales (DNI, Apellido, Nombre) de la matriz usando SLICING"""
+    matriz = crear_matriz_notas()
+    lista_datos_personales = []
+    
+    # Recorremos la matriz omitiendo el encabezado (otro uso de slicing!)
+    for fila in matriz[1:]: 
+        # REQUERIMIENTO DEL PROFE: Slicing en Listas
+        # Recortamos la lista para obviar la Materia (índice 0) y las Notas (índice 4)
+        datos_alumno = fila[1:4] 
+        lista_datos_personales.append(datos_alumno)
+        
+    return lista_datos_personales
