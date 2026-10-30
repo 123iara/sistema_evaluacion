@@ -161,6 +161,9 @@ def mostrar_estadisticas():
             "Porcentaje con promedio alto:",
             round(resultados["porcentaje_altos"], 2), "%"
         )
+        #Mostrar mejor y peor promedio registrado (maximo y minimo)
+        print("Mejor promedio registrado:", resultados["mejor_promedio"])
+        print("Peor promedio registrado:", resultados["peor_promedio"])
 
 def buscar_estudiante():
     print("\033[34m------- BUSCAR ESTUDIANTE -------\033[0m")

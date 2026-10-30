@@ -40,12 +40,18 @@ def estadisticas_materia(nombre_materia):
     promedios_altos = len([p for p in promedios if p >= 8])
     porcentaje_altos = (promedios_altos * 100) / cantidad_calificados
 
+    #Identificacion de valores MAXIMOS Y MINIMOS
+    mejor_promedio = max(promedios)
+    peor_promedio = min(promedios)
+
     # Devolvemos el diccionario prolijo
     resultado = {
         "aprobados": aprobados,
         "desaprobados": desaprobados,
         "porcentaje_altos": porcentaje_altos,
-        "total_calificados": cantidad_calificados
+        "total_calificados": cantidad_calificados,
+        "mejor_promedio": mejor_promedio,
+        "peor_promedio": peor_promedio
     }
     
     return True, resultado
