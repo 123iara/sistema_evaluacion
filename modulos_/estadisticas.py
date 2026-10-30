@@ -57,4 +57,28 @@ def estadisticas_materia(nombre_materia):
     return True, resultado
 
 
+#USO DE CONJUNTOS (SETS) E INTERSECCION
+def estudiantes_en_todas_las_materias():
+    """Usa conjuntos (sets) e intersección para buscar alumnos anotados en todas las materias."""
+    if not materias:
+        return False, "No hay materias registradas en el sistema."
+
+    lista_conjuntos = []
+    
+    for nombre_materia, datos in materias.items():
+        #Creamos un conjunto (set) con los DNIs para eliminar cualquier dato duplicado
+        conjunto_dnis = {alumno["dni"] for alumno in datos["alumnos"]}
+        lista_conjuntos.append(conjunto_dnis)
+    
+    # Intersección de todos los conjuntos para encontrar los que están en TODAS las materias
+    if lista_conjuntos:
+        #Se toma el primer conjunto, cruza las listas y busca qué DNI se repite en absolutamente todas
+        dnis_comunes = set.intersection(*lista_conjuntos)
+        
+        if dnis_comunes:
+            return True, f"DNI de los alumnos inscriptos en TODAS las materias: {dnis_comunes}"
+        else:
+            return True, "No hay ningún alumno que esté inscripto en todas las materias a la vez."
+            
+    return False, "No hay alumnos inscriptos."
     

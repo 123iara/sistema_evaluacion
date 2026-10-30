@@ -10,7 +10,7 @@ from modulos_.materias_CRUD import crear_materia, listar_materias, modificar_mat
 from modulos_.notas_CRUD import agregar_nota, obtener_notas, modificar_nota, eliminar_nota
 from modulos_.matrices_busquedas import crear_matriz_notas, buscar_notas_estudiante, obtener_datos_personales_matriz
 from modulos_.estadisticas import estadisticas_materia
-
+from modulos_.estadisticas import estadisticas_materia, estudiantes_en_todas_las_materias
 
 # LOGIN
 
@@ -47,7 +47,8 @@ def menu_principal():
       print("8. Buscar materias y notas de un estudiante")
       print("9. Estadisticas academicas")
       print("10. Extraer alumnos de matriz (Slicing)") # Agregado para cumplir corrección
-      print("11. Salir")
+      print("11. Ver alumnos en todas las materias (Conjuntos)")
+      print("12. Salir")
 
 def mostrar_menu_materias():
     print("Ingresando a Materias...")
@@ -364,7 +365,7 @@ def ejecutar_sistema():
 
         opcion = 0
 
-        while opcion != 11:
+        while opcion != 12:
             menu_principal()
             try:
                 opcion = int(input("Ingrese una opcion:"))
@@ -399,6 +400,11 @@ def ejecutar_sistema():
                          print(f"DNI: {alumno[0].strip()} | Apellido: {alumno[1].strip()} | Nombre: {alumno[2].strip()}")
 
                 elif opcion == 11:
+                     print("--- ALUMNOS EN TODAS LAS MATERIAS ---")
+                     exito, msj = estudiantes_en_todas_las_materias()
+                     print(msj)
+
+                elif opcion == 12:
                      print("Saliendo del sistema..")
                 
             except ValueError:
