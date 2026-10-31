@@ -1,7 +1,5 @@
 #Crear, Leer, Actualizar y Borrar (CRUD) de alumnos
 
-from datos_generales.memoria import estudiantes
-
 import re #para expresiones regulares, se usa para validar el formato del DNI
 
 import os #para verificar la existencia del archivo y manejar errores de escritura
