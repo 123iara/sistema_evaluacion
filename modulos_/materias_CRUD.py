@@ -2,7 +2,7 @@
 
 import os
 
-from alumnos_CRUD import obtener_todos_estudiantes
+from modulos_.alumnos_CRUD import obtener_todos_estudiantes
 
 ARCHIVO_MATERIAS = "materias.txt"
 ARCHIVO_INSCRIPCIONES = "inscripciones.txt"
@@ -21,7 +21,7 @@ def obtener_todas_materias():
     return materias
 
 def crear_materia(nombre):
-    nombre = nombre.strip().capitalize()
+    nombre = nombre.strip().title()
     materias = obtener_todas_materias()
     
     if nombre in materias:
@@ -38,8 +38,8 @@ def listar_materias():
    return obtener_todas_materias()
 
 def modificar_materia(nombre_actual, nombre_nuevo):
-    nombre_actual = nombre_actual.strip().upper()
-    nombre_nuevo = nombre_nuevo.strip().upper()
+    nombre_actual = nombre_actual.strip().title()
+    nombre_nuevo = nombre_nuevo.strip().title()
 
     materias = obtener_todas_materias()
     if nombre_actual not in materias:
@@ -105,15 +105,16 @@ def eliminar_materia(nombre):
 
 #AGREGAR ALUMNO A MATERIA
 def agregar_alumno_materia(nombre_materia, dni):
+    nombre_materia = nombre_materia.strip().title()
     estudiantes = obtener_todos_estudiantes()
-    if dni not in estudiantes:
+    if str(dni) not in estudiantes: # Aseguramos que busque como texto
         return False, "El estudiante no está registrado."
     
     materias = obtener_todas_materias()
     if nombre_materia not in materias:
         return False, "Materia no encontrada."
-    
-    #DNI existe = estudiante encontrado
+
+    #DNI = existe, estudiante registrado
     # VERIFICAR SI YA ESTA EN LA MATERIA
     try:
         with open(ARCHIVO_INSCRIPCIONES, 'r', encoding='UTF-8') as archivo:
@@ -122,7 +123,15 @@ def agregar_alumno_materia(nombre_materia, dni):
                 if len(datos) >= 2 and datos[0] == nombre_materia and datos[1] == str(dni):
                     return False, "El estudiante ya está inscripto en esta materia."
     except FileNotFoundError:
-        pass #Si no existe, es la primera inscripción
+        pass # Si no existe, es la primera inscripción
+
+    # AGREGAR EL ESTUDIANTE A LA MATERIA
+    try:
+        with open(ARCHIVO_INSCRIPCIONES, 'a', encoding='UTF-8') as archivo:
+            archivo.write(f"{nombre_materia};{dni};\n")
+        return True, "Alumno inscripto correctamente."
+    except OSError as e:
+        return False, f"Error al inscribir: {e}"
 
     # AGREGAR EL ESTUDIANTE A LA MATERIA
     try:
@@ -135,7 +144,8 @@ def agregar_alumno_materia(nombre_materia, dni):
 
 #LISTA ALUMNOS POR MATERIA
 def obtener_alumnos_materia(nombre_materia):
-    #Devuelve los datos en formato de lista de diccionarios para mantener la compatibilidad con el resto del sistema.
+    nombre_materia = nombre_materia.strip().title() # Estandarizamos la búsqueda
+    # Devuelve los datos en formato de lista de diccionarios para mantener la compatibilidad con el resto del sistema.
     alumnos_inscriptos = []
     estudiantes = obtener_todos_estudiantes()
     try:
@@ -145,10 +155,10 @@ def obtener_alumnos_materia(nombre_materia):
                 if len(datos) >= 2 and datos[0] == nombre_materia:
                     dni = datos[1]
                     notas_str = datos[2] if len(datos) > 2 else ""
-                    #si hay notas guardadas separadas por coma, las convierte a lista float
+                    # si hay notas guardadas separadas por coma, las convierte a lista float
                     notas = [float(n) for n in notas_str.split(',')] if notas_str else []
                     
-                    #cruzamos el DNI del archivo de inscripciones con los datos del archivo alumnos.txt
+                    # cruzamos el DNI del archivo de inscripciones con los datos del archivo alumnos.txt
                     if dni in estudiantes:
                         est = estudiantes[dni]
                         nuevo_alumno = {

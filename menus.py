@@ -1,5 +1,3 @@
-#Aca se importa la logica desde los modulos CRUD y el Login
-#responsabilidad del ingreso y salida de datos por consola.
 
 #Aca se importa la logica desde los modulos CRUD y el Login
 #responsabilidad del ingreso y salida de datos por consola.
@@ -9,7 +7,6 @@ from modulos_.alumnos_CRUD import crear_estudiante, obtener_todos_estudiantes, b
 from modulos_.materias_CRUD import crear_materia, listar_materias, modificar_materia, eliminar_materia, agregar_alumno_materia, obtener_alumnos_materia
 from modulos_.notas_CRUD import agregar_nota, obtener_notas, modificar_nota, eliminar_nota
 from modulos_.matrices_busquedas import crear_matriz_notas, buscar_notas_estudiante, obtener_datos_personales_matriz
-from modulos_.estadisticas import estadisticas_materia
 from modulos_.estadisticas import estadisticas_materia, estudiantes_en_todas_las_materias
 
 # LOGIN
@@ -144,7 +141,7 @@ def mostrar_estadisticas():
     print("Materias disponibles:", materias_disponibles)
 
     nombre = input("Ingrese el nombre de la materia: ")
-    nombre = nombre.strip().capitalize()
+    nombre = nombre.strip().title()
 
     if nombre not in materias_disponibles:
         print("Materia no encontrada.")
@@ -342,7 +339,7 @@ def menu_materias():
                     print("Cree una materia primero.")
                 else:
                     print("Materias disponibles:", materias)
-                    mat_seleccion = input("Escriba el nombre de la materia para ingresar: ").strip().capitalize()
+                    mat_seleccion = input("Escriba el nombre de la materia para ingresar: ").strip().title()
                     if mat_seleccion in materias:
                         menu_materia(mat_seleccion)
                     else:
@@ -355,7 +352,6 @@ def menu_materias():
              print("Error: Ingrese un numero valido.")
                 
 
-    
 #EJECUCION DEL SISTEMA:
 def ejecutar_sistema():
     acceso = login()
