@@ -1,5 +1,6 @@
 #Crear, Leer, Actualizar y Borrar (CRUD) de alumnos
 
+
 import re #para expresiones regulares, se usa para validar el formato del DNI
 
 import os #para verificar la existencia del archivo y manejar errores de escritura
@@ -50,12 +51,30 @@ def crear_estudiante(dni, nombre, apellido):
 
 
 def obtener_todos_estudiantes():
+    #Lee el archivo .txt y reconstruye el diccionario de estudiantes
+    estudiantes = {}
+    try:
+        with open("alumnos.txt", 'r', encoding='UTF-8') as archivo:
+            for linea in archivo:
+                datos = linea.strip().split(';')
+                if len(datos) == 5:
+                    dni, legajo, nombre, apellido, usuario = datos
+                    estudiantes[dni] = {
+                        "dni": dni,
+                        "legajo": int(legajo),
+                        "nombre": nombre,
+                        "apellido": apellido,
+                        "usuario": usuario
+                    }
+    except FileNotFoundError:
+        pass # Si el archivo no existe, devuelve un diccionario vacío
     return estudiantes
 
 #ENCONTRAR ESTUDIANTE
 def buscar_estudiante_por_dni(dni):
-    if dni in estudiantes:
-        return True, estudiantes[dni]
+    estudiantes = obtener_todos_estudiantes()
+    if str(dni) in estudiantes:
+        return True, estudiantes[str(dni)]
     return False, f"Estudiante con DNI {dni} no encontrado."
 
 #UPDATE Estudiante:
@@ -91,13 +110,7 @@ def modificar_datos_estudiante(dni, nuevo_nombre, nuevo_apellido):
         
     except Exception as e:
         return False, f"Error al modificar archivo: {e}"
-    
 
-    
-    #Funcion lambda para actualizar
-    estudiantes[dni]["nombre"] = formatear_nombre(nuevo_nombre)
-    estudiantes[dni]["apellido"] = formatear_nombre(nuevo_apellido)
-    return True, f"Datos del DNI {dni} actualizados con éxito."
     
 
 def eliminar_estudiante(dni_borrar):
@@ -129,13 +142,14 @@ def eliminar_estudiante(dni_borrar):
 #Funciones lambda para filtrar estudiantes por nombre o apellido
 def filtrar_estudiantes_por_apellido(letra_inicial):
     """Devuelve una lista de alumnos cuyo apellido inicia con una letra específica."""
+    estudiantes = obtener_todos_estudiantes()
     todos = list(estudiantes.values())
     letra = letra_inicial.lower()
 
-    #La funcion debajo queda solo con los alumnos que cumplen la condición pedida (ej: que el apellido empiece con una letra específica)
-    filtrados = list(filter(lambda est: est["apellido"][0].lower() == letra, todos)) #filter y lambda 
-                                                                        
-    #Convierte el diccionario de cada alumno en un texto simple y prolijo ("Apellido, Nombre") listo para imprimir
-    nombres_completos = list(map(lambda est: f"{est['apellido']}, {est['nombre']}", filtrados)) #map y lambda
+    # La funcion debajo queda solo con los alumnos que cumplen la condicion pedida
+    filtrados = list(filter(lambda est: est["apellido"][0].lower() == letra, todos)) # filter y lambda
+
+    # Convierte el diccionario de cada alumno en un texto simple y prolijo
+    nombres_completos = list(map(lambda est: f"{est['apellido']}, {est['nombre']}", filtrados)) # map y lambda
 
     return nombres_completos
