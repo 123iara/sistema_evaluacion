@@ -1,3 +1,4 @@
+
 #Aca se importa la logica desde los modulos CRUD y el Login
 #responsabilidad del ingreso y salida de datos por consola.
 
@@ -5,9 +6,8 @@ from login_general.login import verificar_credenciales
 from modulos_.alumnos_CRUD import crear_estudiante, obtener_todos_estudiantes, buscar_estudiante_por_dni, modificar_datos_estudiante, eliminar_estudiante
 from modulos_.materias_CRUD import crear_materia, listar_materias, modificar_materia, eliminar_materia, agregar_alumno_materia, obtener_alumnos_materia
 from modulos_.notas_CRUD import agregar_nota, obtener_notas, modificar_nota, eliminar_nota
-from modulos_.matrices_busquedas import crear_matriz_notas, buscar_notas_estudiante
-from modulos_.estadisticas import estadisticas_materia
-
+from modulos_.matrices_busquedas import crear_matriz_notas, buscar_notas_estudiante, obtener_datos_personales_matriz
+from modulos_.estadisticas import estadisticas_materia, estudiantes_en_todas_las_materias
 
 # LOGIN
 
@@ -43,7 +43,10 @@ def menu_principal():
       print("7. Mostrar matriz de calificaciones")
       print("8. Buscar materias y notas de un estudiante")
       print("9. Estadisticas academicas")
-      print("10. Salir")
+      print("10. Extraer alumnos de matriz (Slicing)") # Agregado para cumplir corrección
+      print("11. Ver alumnos en todas las materias (Conjuntos)")
+      print("12. Salir")
+
 def mostrar_menu_materias():
     print("Ingresando a Materias...")
     print("----- MATERIAS -----")
@@ -101,12 +104,11 @@ def mostrar_matriz_notas():
 
     matriz = crear_matriz_notas()
 
-    if len(matriz) == 0:
+    if len(matriz) <= 1:
         print("No hay calificaciones registradas.")
     else:
         for fila in matriz:
-            print(fila)
-
+            print(" | ".join(fila)) # Para que se imprima prolijo como tabla
 
 def mostrar_busqueda_notas():
     print("----- BUSQUEDA DE NOTAS POR ESTUDIANTE -----")
@@ -114,14 +116,16 @@ def mostrar_busqueda_notas():
     dni = input("Ingrese el DNI del estudiante: ")
     resultados = buscar_notas_estudiante(dni)
 
-    if len(resultados) == 0:
+    if len(resultados) <= 2: # Solo tiene el nombre y la linea
         print("No se encontraron materias para ese estudiante.")
     else:
-        for resultado in resultados:
-            print("Materia:", resultado[0])
-            print("Notas:", resultado[1])
-            print("--------------------")
-
+        for linea in resultados:
+            if isinstance(linea, list):
+                print("Materia:", linea[0])
+                print("Notas:", linea[1])
+                print("--------------------")
+            else:
+                print(linea)
 
 
 # ESTADISTICAS ACADEMICAS
@@ -137,36 +141,27 @@ def mostrar_estadisticas():
     print("Materias disponibles:", materias_disponibles)
 
     nombre = input("Ingrese el nombre de la materia: ")
-    nombre = nombre.strip().capitalize()
+    nombre = nombre.strip().title()
 
     if nombre not in materias_disponibles:
         print("Materia no encontrada.")
         return
 
-    resultados = estadisticas_materia(nombre)
+    exito, resultados = estadisticas_materia(nombre)
 
-    if resultados is None:
-        print("No hay alumnos con notas registradas.")
+    if not exito:
+        print(resultados)
     else:
         print("Materia:", nombre)
-        print("Promedio general:", round(resultados[0], 2))
-        print("Alumnos aprobados:", resultados[1])
-        print("Alumnos desaprobados:", resultados[2])
+        print("Alumnos aprobados:", resultados["aprobados"])
+        print("Alumnos desaprobados:", resultados["desaprobados"])
         print(
             "Porcentaje con promedio alto:",
-            round(resultados[3], 2), "%"
+            round(resultados["porcentaje_altos"], 2), "%"
         )
-
-
-
-
-
-
-
-
-
-
-
+        #Mostrar mejor y peor promedio registrado (maximo y minimo)
+        print("Mejor promedio registrado:", resultados["mejor_promedio"])
+        print("Peor promedio registrado:", resultados["peor_promedio"])
 
 def buscar_estudiante():
     print("\033[34m------- BUSCAR ESTUDIANTE -------\033[0m")
@@ -225,7 +220,12 @@ def listar_alumnos_materia_menu(materia_seleccionada):
         print("No hay alumnos registrados en esta materia.")
     else:
         for alumno in alumnos:
-            print("Legajo:", alumno["legajo"], "| DNI:", alumno["dni"], "| Nombre:", alumno["nombre"], alumno["apellido"])
+            # Ahora tenemos que ir a buscar los datos a estudiantes_CRUD porque hicimos referenciacion
+            exito, datos = buscar_estudiante_por_dni(alumno["dni"])
+            if exito:
+                print("Legajo:", datos["legajo"], "| DNI:", alumno["dni"], "| Nombre:", datos["nombre"], datos["apellido"])
+            else:
+                 print("DNI:", alumno["dni"], "- Datos del estudiante no encontrados")
 
 
 #NOTAS POR MATERIA
@@ -306,7 +306,6 @@ def menu_materia(nombre_materia):
         except ValueError:
              print("Error: Ingrese un numero valido.")
 
-
 #MENU MATERIAS
 def menu_materias():
     opcion = 0
@@ -340,7 +339,7 @@ def menu_materias():
                     print("Cree una materia primero.")
                 else:
                     print("Materias disponibles:", materias)
-                    mat_seleccion = input("Escriba el nombre de la materia para ingresar: ").strip().capitalize()
+                    mat_seleccion = input("Escriba el nombre de la materia para ingresar: ").strip().title()
                     if mat_seleccion in materias:
                         menu_materia(mat_seleccion)
                     else:
@@ -353,7 +352,6 @@ def menu_materias():
              print("Error: Ingrese un numero valido.")
                 
 
-    
 #EJECUCION DEL SISTEMA:
 def ejecutar_sistema():
     acceso = login()
@@ -363,7 +361,7 @@ def ejecutar_sistema():
 
         opcion = 0
 
-        while opcion != 9:
+        while opcion != 12:
             menu_principal()
             try:
                 opcion = int(input("Ingrese una opcion:"))
@@ -390,8 +388,19 @@ def ejecutar_sistema():
 
                 elif opcion == 9:
                      mostrar_estadisticas()
-
+                     
                 elif opcion == 10:
+                     datos_extraidos = obtener_datos_personales_matriz()
+                     print("--- ALUMNOS EXTRAIDOS DE LA MATRIZ (CON SLICING) ---")
+                     for alumno in datos_extraidos:
+                         print(f"DNI: {alumno[0].strip()} | Apellido: {alumno[1].strip()} | Nombre: {alumno[2].strip()}")
+
+                elif opcion == 11:
+                     print("--- ALUMNOS EN TODAS LAS MATERIAS ---")
+                     exito, msj = estudiantes_en_todas_las_materias()
+                     print(msj)
+
+                elif opcion == 12:
                      print("Saliendo del sistema..")
                 
             except ValueError:
