@@ -28,18 +28,43 @@ def maximo_recursivo(valores):
 
 
 # PROMEDIO DE UN ALUMNO
+
+# PROMEDIO DE UN ALUMNO
 def calcular_promedio(notas):
-    if len(notas) == 0:
+    try:
+        if len(notas) == 0:
+            raise ValueError("No hay notas para calcular el promedio.")
+
+        for nota in notas:
+            if not isinstance(nota, (int, float)):
+                raise TypeError("Todas las notas deben ser numéricas.")
+
+        return suma_recursiva(notas) / len(notas)
+
+    except (ValueError, TypeError, ZeroDivisionError) as error:
+        print("Error:", error)
         return None
 
-    return suma_recursiva(notas) / len(notas)
 
 
 # ESTADISTICAS POR MATERIA
+
+# ESTADISTICAS POR MATERIA
 def estadisticas_materia(nombre_materia):
-    if nombre_materia not in materias:
+    try:
+        if nombre_materia not in materias:
+            raise ValueError("La materia ingresada no existe.")
+
+        return _estadisticas_alumnos(materias[nombre_materia]["alumnos"])
+
+    except ValueError as error:
+        print("Error:", error)
         return None
-    return _estadisticas_alumnos(materias[nombre_materia]["alumnos"])
+
+    except KeyError:
+        print("Error: No se encontraron los datos de alumnos.")
+        return None
+
 
 
 def estadisticas_generales():

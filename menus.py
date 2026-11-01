@@ -378,22 +378,39 @@ def menu_materias():
 
     
 #EJECUCION DEL SISTEMA:
+
+
+
+# EJECUCION DEL SISTEMA
+
 def ejecutar_sistema():
-    cargar_datos()
+    try:
+        cargar_datos()
+
+    except (FileNotFoundError, PermissionError, OSError,
+            ValueError, KeyError, TypeError) as error:
+        print("No se pudieron cargar los datos del sistema:", error)
+        return
+
     usuario = login()
+
     if usuario is None:
-        print ("Se agotaron los intentos.")
+        print("Se agotaron los intentos.")
         return
 
     rol = obtener_rol(usuario)
+
     print("Acceso permitido. Perfil:", rol)
+
     opcion = 0
     salir = 10 if rol == "administrador" else 6
 
     while opcion != salir:
         menu_principal(rol)
+
         try:
             opcion = int(input("Ingrese una opcion: "))
+
             if rol == "administrador":
                 acciones = {
                     1: registrar_estudiante,
@@ -414,11 +431,22 @@ def ejecutar_sistema():
                     4: mostrar_busqueda_notas,
                     5: mostrar_estadisticas,
                 }
+
             if opcion == salir:
                 print("Saliendo del sistema...")
+
             elif opcion in acciones:
-                acciones[opcion]()
+                try:
+                    acciones[opcion]()
+
+                except (PermissionError, OSError) as error:
+                    print("Error al acceder a los archivos:", error)
+
+                except (KeyError, TypeError) as error:
+                    print("Error en los datos del sistema:", error)
+
             else:
                 print("Ingrese una opcion disponible para su perfil.")
+
         except ValueError:
-            print("Ingrese un numero valido")
+            print("Ingrese un numero valido.")
