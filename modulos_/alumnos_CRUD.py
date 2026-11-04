@@ -4,6 +4,11 @@
 from datos_generales.memoria import estudiantes
 
 def crear_estudiante(dni, nombre, apellido):
+
+    #FORMATO DEL NOMBRE Y APELLIDO
+    nombre = nombre.strip().title()
+    apellido = apellido.strip().title()
+
     #VERIFICAR SI EL DNI YA ESTÁ REGISTRADO
     if dni in estudiantes:
         return False, "El estudiante ya está registrado."
