@@ -21,6 +21,7 @@ def validar_nombre_apellido(texto):
     return bool(re.search(patron, texto))
 
 # FUNCIONES CRUD:
+
 def obtener_todos_estudiantes():
     estudiantes = {}
     try:
