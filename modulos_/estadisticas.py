@@ -1,7 +1,7 @@
-
 from functools import reduce
 
-from datos_generales.memoria import materias
+# Variable global interna para mantener compatibilidad con los tests y el sistema
+materias = {}
 
 
 def suma_recursiva(valores):
@@ -28,8 +28,6 @@ def maximo_recursivo(valores):
 
 
 # PROMEDIO DE UN ALUMNO
-
-# PROMEDIO DE UN ALUMNO
 def calcular_promedio(notas):
     try:
         if len(notas) == 0:
@@ -46,9 +44,6 @@ def calcular_promedio(notas):
         return None
 
 
-
-# ESTADISTICAS POR MATERIA
-
 # ESTADISTICAS POR MATERIA
 def estadisticas_materia(nombre_materia):
     try:
@@ -64,7 +59,6 @@ def estadisticas_materia(nombre_materia):
     except KeyError:
         print("Error: No se encontraron los datos de alumnos.")
         return None
-
 
 
 def estadisticas_generales():

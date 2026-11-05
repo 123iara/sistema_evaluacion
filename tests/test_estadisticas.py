@@ -1,20 +1,21 @@
 import unittest
-
-from datos_generales.memoria import materias
+import unittest
 from modulos_.estadisticas import (
-    calcular_promedio,
-    estadisticas_generales,
-    estadisticas_materia,
-    maximo_recursivo,
-    suma_recursiva,
+    calcular_promedio, 
+    estadisticas_materia, 
+    estadisticas_generales, 
+    suma_recursiva,      
+    maximo_recursivo,    
+    materias
 )
-
 
 class PruebasEstadisticas(unittest.TestCase):
     def setUp(self):
+        # Limpiamos el diccionario compartido antes de cada test
         materias.clear()
 
     def tearDown(self):
+        # Limpiamos el diccionario compartido al terminar cada test
         materias.clear()
 
     def test_promedio_de_notas_y_lista_vacia(self):
