@@ -23,24 +23,29 @@ def validar_nombre_apellido(texto):
 #FUNCIONES CRUD: 
 
 def crear_estudiante(dni, nombre, apellido):
-    ##VALIDAMOS EL FORMATO CON REGEX
+    ## VALIDAMOS EL FORMATO CON REGEX
     if not validar_dni(dni):
         return False, "Error: El DNI debe ser numérico y tener 8 dígitos."
     if not validar_nombre_apellido(nombre) or not validar_nombre_apellido(apellido):
         return False, "Error: El nombre y apellido solo pueden contener letras."
 
-    #verificar si el DNI ya está registrado
+    # FORMATO DEL NOMBRE Y APELLIDO (Para asegurar mayúsculas iniciales y sin espacios)
+    nombre = nombre.strip().title()
+    apellido = apellido.strip().title()
+
+    # VERIFICAR SI EL DNI YA ESTÁ REGISTRADO
     estudiantes = obtener_todos_estudiantes()
     if dni in estudiantes:
        return False, f"El estudiante con DNI {dni} ya está registrado."
 
-    ##Slicing y metodo de cadenas para crearle un usuario a partir del nombre y apellido (en minusculas)
+    ## Slicing y metodo de cadenas para crearle un usuario a partir del nombre y apellido (en minusculas)
     usuario_generado = (nombre[0:1] + apellido).lower().replace(" ", "")
-    legajo = len(estudiantes) + 1 ##ASIGNAR UN NUEVO LEGAJO
+    legajo = len(estudiantes) + 1 ## ASIGNAR UN NUEVO LEGAJO
 
-    #Excepciones y Escritura en archivo
+    # Excepciones y Escritura en archivo
     try:
         with open("alumnos.txt", 'a', encoding='UTF-8') as archivo:
+            # Usamos el formatear_nombre lambda que tenías arriba por las dudas
             linea_registro = f"{dni};{legajo};{formatear_nombre(nombre)};{formatear_nombre(apellido)};{usuario_generado}\n"
             archivo.write(linea_registro)
         return True, f"Estudiante {formatear_nombre(nombre)} registrado con éxito."
