@@ -1,52 +1,57 @@
-
 #Aca se importa la logica desde los modulos CRUD y el Login
 #responsabilidad del ingreso y salida de datos por consola.
 
-from login_general.login import verificar_credenciales
+from login_general.login import verificar_credenciales, obtener_rol
+from datos_generales.persistencia import cargar_datos
 from modulos_.alumnos_CRUD import crear_estudiante, obtener_todos_estudiantes, buscar_estudiante_por_dni, modificar_datos_estudiante, eliminar_estudiante
 from modulos_.materias_CRUD import crear_materia, listar_materias, modificar_materia, eliminar_materia, agregar_alumno_materia, obtener_alumnos_materia
 from modulos_.notas_CRUD import agregar_nota, obtener_notas, modificar_nota, eliminar_nota
-from modulos_.matrices_busquedas import crear_matriz_notas, buscar_notas_estudiante, obtener_datos_personales_matriz
-from modulos_.estadisticas import estadisticas_materia, estudiantes_en_todas_las_materias
+from modulos_.matrices_busquedas import crear_matriz_notas, buscar_notas_estudiante
+from modulos_.estadisticas import estadisticas_materia, estadisticas_generales
+
 
 # LOGIN
 
 def login():
-    acceso = False
     intentos = 3
 
-    while intentos > 0 and acceso == False:
+    while intentos > 0:
         print("\033[4;35m---------- LOGIN ----------\033[0m")
         usuario = input("Usuario: ")
         contrasena = input("Contrasena: ")
 
         if verificar_credenciales(usuario, contrasena):
-            acceso = True
             print("\033[32mIngreso correcto al sistema.\033[0m")
+            return usuario
         else:
             intentos = intentos - 1
             print("\033[31mUsuario o contrasena incorrectos.\033[0m")
             print("\033[33mIntentos restantes:\033[0m", intentos)
 
-    return acceso
+    return None
 
 #MENU PRINCIPAL   
 
-def menu_principal():
+def menu_principal(rol):
       print("\033[1;33;44m----- MENU PRINCIPAL -----\033[0m")
-      print("1. Registrar estudiante")
-      print("2. Lista estudiantes")
-      print("3. Buscar estudiante")
-      print("4. Modificar estudiante")
-      print("5. Eliminar estudiante") # Agregado por corrección
-      print("6. Gestion de Materias")
-      print("7. Mostrar matriz de calificaciones")
-      print("8. Buscar materias y notas de un estudiante")
-      print("9. Estadisticas academicas")
-      print("10. Extraer alumnos de matriz (Slicing)") # Agregado para cumplir corrección
-      print("11. Ver alumnos en todas las materias (Conjuntos)")
-      print("12. Salir")
-
+      if rol == "administrador":
+          print("1. Registrar estudiante")
+          print("2. Lista estudiantes")
+          print("3. Buscar estudiante")
+          print("4. Modificar estudiante")
+          print("5. Eliminar estudiante")
+          print("6. Gestion de Materias")
+          print("7. Mostrar matriz de calificaciones")
+          print("8. Buscar materias y notas de un estudiante")
+          print("9. Estadisticas academicas")
+          print("10. Salir")
+      else:
+          print("1. Lista estudiantes")
+          print("2. Buscar estudiante")
+          print("3. Mostrar matriz de calificaciones")
+          print("4. Buscar materias y notas de un estudiante")
+          print("5. Estadisticas academicas")
+          print("6. Salir")
 def mostrar_menu_materias():
     print("Ingresando a Materias...")
     print("----- MATERIAS -----")
@@ -104,11 +109,12 @@ def mostrar_matriz_notas():
 
     matriz = crear_matriz_notas()
 
-    if len(matriz) <= 1:
+    if len(matriz) == 0:
         print("No hay calificaciones registradas.")
     else:
         for fila in matriz:
-            print(" | ".join(fila)) # Para que se imprima prolijo como tabla
+            print(fila)
+
 
 def mostrar_busqueda_notas():
     print("----- BUSQUEDA DE NOTAS POR ESTUDIANTE -----")
@@ -116,16 +122,14 @@ def mostrar_busqueda_notas():
     dni = input("Ingrese el DNI del estudiante: ")
     resultados = buscar_notas_estudiante(dni)
 
-    if len(resultados) <= 2: # Solo tiene el nombre y la linea
+    if len(resultados) == 0:
         print("No se encontraron materias para ese estudiante.")
     else:
-        for linea in resultados:
-            if isinstance(linea, list):
-                print("Materia:", linea[0])
-                print("Notas:", linea[1])
-                print("--------------------")
-            else:
-                print(linea)
+        for resultado in resultados:
+            print("Materia:", resultado[0])
+            print("Notas:", resultado[1])
+            print("--------------------")
+
 
 
 # ESTADISTICAS ACADEMICAS
@@ -141,27 +145,51 @@ def mostrar_estadisticas():
     print("Materias disponibles:", materias_disponibles)
 
     nombre = input("Ingrese el nombre de la materia: ")
-    nombre = nombre.strip().title()
+    nombre = nombre.strip().capitalize()
 
     if nombre not in materias_disponibles:
         print("Materia no encontrada.")
         return
 
-    exito, resultados = estadisticas_materia(nombre)
+    resultados = estadisticas_materia(nombre)
 
-    if not exito:
-        print(resultados)
+    if resultados is None:
+        print("No hay alumnos con notas registradas.")
     else:
         print("Materia:", nombre)
+        print("Promedio general:", round(resultados["promedio_general"], 2))
         print("Alumnos aprobados:", resultados["aprobados"])
         print("Alumnos desaprobados:", resultados["desaprobados"])
         print(
             "Porcentaje con promedio alto:",
             round(resultados["porcentaje_altos"], 2), "%"
         )
-        #Mostrar mejor y peor promedio registrado (maximo y minimo)
-        print("Mejor promedio registrado:", resultados["mejor_promedio"])
-        print("Peor promedio registrado:", resultados["peor_promedio"])
+        print("Cantidad de notas:", resultados["cantidad_notas"])
+        print("Nota mínima:", resultados["nota_minima"])
+        print("Nota máxima:", resultados["nota_maxima"])
+        print("Resumen:", resultados["resumen"])
+
+    general = estadisticas_generales()
+    if general:
+        print("----- RESUMEN GENERAL -----")
+        print("Promedio general del grupo:", round(general["promedio_general"], 2))
+        print("Notas registradas:", general["cantidad_notas"])
+        print("Aprobados / desaprobados:", general["aprobados"], "/", general["desaprobados"])
+        print("Porcentaje con promedio alto:", round(general["porcentaje_altos"], 2), "%")
+        print("Nota mínima del grupo:", general["nota_minima"])
+        print("Nota máxima del grupo:", general["nota_maxima"])
+        print("Resumen general:", general["resumen"])
+
+
+
+
+
+
+
+
+
+
+
 
 def buscar_estudiante():
     print("\033[34m------- BUSCAR ESTUDIANTE -------\033[0m")
@@ -220,12 +248,7 @@ def listar_alumnos_materia_menu(materia_seleccionada):
         print("No hay alumnos registrados en esta materia.")
     else:
         for alumno in alumnos:
-            # Ahora tenemos que ir a buscar los datos a estudiantes_CRUD porque hicimos referenciacion
-            exito, datos = buscar_estudiante_por_dni(alumno["dni"])
-            if exito:
-                print("Legajo:", datos["legajo"], "| DNI:", alumno["dni"], "| Nombre:", datos["nombre"], datos["apellido"])
-            else:
-                 print("DNI:", alumno["dni"], "- Datos del estudiante no encontrados")
+            print("Legajo:", alumno["legajo"], "| DNI:", alumno["dni"], "| Nombre:", alumno["nombre"], alumno["apellido"])
 
 
 #NOTAS POR MATERIA
@@ -306,6 +329,7 @@ def menu_materia(nombre_materia):
         except ValueError:
              print("Error: Ingrese un numero valido.")
 
+
 #MENU MATERIAS
 def menu_materias():
     opcion = 0
@@ -339,7 +363,7 @@ def menu_materias():
                     print("Cree una materia primero.")
                 else:
                     print("Materias disponibles:", materias)
-                    mat_seleccion = input("Escriba el nombre de la materia para ingresar: ").strip().title()
+                    mat_seleccion = input("Escriba el nombre de la materia para ingresar: ").strip().capitalize()
                     if mat_seleccion in materias:
                         menu_materia(mat_seleccion)
                     else:
@@ -352,59 +376,77 @@ def menu_materias():
              print("Error: Ingrese un numero valido.")
                 
 
+    
 #EJECUCION DEL SISTEMA:
+
+
+
+# EJECUCION DEL SISTEMA
+
 def ejecutar_sistema():
-    acceso = login()
+    try:
+        cargar_datos()
 
-    if acceso == True:
-        print( "Acceso al sistema permitido")
+    except (FileNotFoundError, PermissionError, OSError,
+            ValueError, KeyError, TypeError) as error:
+        print("No se pudieron cargar los datos del sistema:", error)
+        return
 
-        opcion = 0
+    usuario = login()
 
-        while opcion != 12:
-            menu_principal()
-            try:
-                opcion = int(input("Ingrese una opcion:"))
+    if usuario is None:
+        print("Se agotaron los intentos.")
+        return
 
-                if opcion == 1:
-                    registrar_estudiante()
-                elif opcion == 2:
-                    listar_estudiantes()
-                elif opcion == 3:
-                    buscar_estudiante()
-                elif opcion == 4:
-                    modificar_estudiante()
-                elif opcion == 5:
-                    eliminar_estudiante_menu()
-                
-                elif opcion == 6:
-                     menu_materias()
+    rol = obtener_rol(usuario)
 
-                elif opcion == 7:
-                     mostrar_matriz_notas()
+    print("Acceso permitido. Perfil:", rol)
 
-                elif opcion == 8:
-                     mostrar_busqueda_notas()
+    opcion = 0
+    salir = 10 if rol == "administrador" else 6
 
-                elif opcion == 9:
-                     mostrar_estadisticas()
-                     
-                elif opcion == 10:
-                     datos_extraidos = obtener_datos_personales_matriz()
-                     print("--- ALUMNOS EXTRAIDOS DE LA MATRIZ (CON SLICING) ---")
-                     for alumno in datos_extraidos:
-                         print(f"DNI: {alumno[0].strip()} | Apellido: {alumno[1].strip()} | Nombre: {alumno[2].strip()}")
+    while opcion != salir:
+        menu_principal(rol)
 
-                elif opcion == 11:
-                     print("--- ALUMNOS EN TODAS LAS MATERIAS ---")
-                     exito, msj = estudiantes_en_todas_las_materias()
-                     print(msj)
+        try:
+            opcion = int(input("Ingrese una opcion: "))
 
-                elif opcion == 12:
-                     print("Saliendo del sistema..")
-                
-            except ValueError:
-                print("Ingrese un numero valido")
+            if rol == "administrador":
+                acciones = {
+                    1: registrar_estudiante,
+                    2: listar_estudiantes,
+                    3: buscar_estudiante,
+                    4: modificar_estudiante,
+                    5: eliminar_estudiante_menu,
+                    6: menu_materias,
+                    7: mostrar_matriz_notas,
+                    8: mostrar_busqueda_notas,
+                    9: mostrar_estadisticas,
+                }
+            else:
+                acciones = {
+                    1: listar_estudiantes,
+                    2: buscar_estudiante,
+                    3: mostrar_matriz_notas,
+                    4: mostrar_busqueda_notas,
+                    5: mostrar_estadisticas,
+                }
 
-    else:
-        print ("Se agotaron los intentos.")
+            if opcion == salir:
+                print("Saliendo del sistema...")
+
+            elif opcion in acciones:
+                try:
+                    acciones[opcion]()
+
+                except (PermissionError, OSError) as error:
+                    print("Error al acceder a los archivos:", error)
+
+                except (KeyError, TypeError) as error:
+                    print("Error en los datos del sistema:", error)
+
+            else:
+                print("Ingrese una opcion disponible para su perfil.")
+
+        except ValueError:
+            print("Ingrese un numero valido.")

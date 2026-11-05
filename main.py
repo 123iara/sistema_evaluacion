@@ -1,4 +1,4 @@
-#Importacion de la funcion principal del sistema desde "menu.py"
+#Importacion de la funcion principal del sistema desde "menus.py"
 #y ejecucion.
 
 from menus import ejecutar_sistema

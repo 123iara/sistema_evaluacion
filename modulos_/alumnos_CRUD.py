@@ -74,10 +74,9 @@ def crear_estudiante(dni, nombre, apellido):
 
 # ENCONTRAR ESTUDIANTE
 def buscar_estudiante_por_dni(dni):
-    estudiantes = obtener_todos_estudiantes()
-    if str(dni) in estudiantes:
-        return True, estudiantes[str(dni)]
-    return False, f"Estudiante con DNI {dni} no encontrado."
+    if dni in estudiantes:
+        return True, estudiantes[dni]
+    return False, "Estudiante no encontrado."
 
 # UPDATE Estudiante
 def modificar_datos_estudiante(dni, nuevo_nombre, nuevo_apellido):
