@@ -3,7 +3,7 @@
 import re
 
 
-PATRON_DNI = re.compile(r"^\d{7,8}$")
+PATRON_DNI = re.compile(r"^\d{8}$")
 PATRON_NOMBRE = re.compile(r"^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?:[ '-][A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$")
 
 
@@ -26,13 +26,13 @@ def normalizar_nombre(nombre):
 def verificar_dni(dni):
     try:
         if not validar_dni(dni):
-            raise ValueError("El DNI debe tener 7 u 8 dígitos.")
+            raise ValueError("El DNI debe tener exactamente 8 dígitos.")
         return True
 
     except ValueError as error:
         print("Error:", error)
         return False
-
+    
 
 def verificar_nombre(nombre):
     try:

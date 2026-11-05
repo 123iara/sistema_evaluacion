@@ -1,15 +1,13 @@
-#Crear, Leer, Actualizar y Borrar (CRUD) de alumnos
-import os
+# Crear, Leer, Actualizar y Borrar (CRUD) de alumnos
 import re
+from datos_generales.memoria import estudiantes
+from datos_generales.persistencia import guardar_datos
 
 # Función para limpiar espacios y poner Mayúscula Inicial (lambda)
 formatear_nombre = lambda texto: str(texto).strip().title()
 
-# CONSTANTES DE ARCHIVOS (Se usa el txt directo para mantener tus tests en verde)
-ARCHIVO_ALUMNOS = "alumnos.txt"
-ARCHIVO_INSCRIPCIONES = "inscripciones.txt"
 
-# EXPRESIONES REGULARES PARA VALIDAR DNI:
+# EXPRESIONES REGULARES PARA VALIDAR DNI Y NOMBRE:
 def validar_dni(dni):
     """Verifica que el DNI tenga exactamente 8 números."""
     patron = r"^\d{8}$" 
@@ -20,25 +18,11 @@ def validar_nombre_apellido(texto):
     patron = r"^[a-zA-Z\s]+$"
     return bool(re.search(patron, texto))
 
+
 # FUNCIONES CRUD:
 
 def obtener_todos_estudiantes():
-    estudiantes = {}
-    try:
-        with open(ARCHIVO_ALUMNOS, 'r', encoding='UTF-8') as archivo:
-            for linea in archivo:
-                datos = linea.strip().split(';')
-                if len(datos) == 5:
-                    dni, legajo, nombre, apellido, usuario = datos
-                    estudiantes[dni] = {
-                        "dni": dni,
-                        "legajo": int(legajo),
-                        "nombre": nombre,
-                        "apellido": apellido,
-                        "usuario": usuario
-                    }
-    except FileNotFoundError:
-        pass
+    # Ahora simplemente devolvemos el diccionario en memoria
     return estudiantes
 
 def crear_estudiante(dni, nombre, apellido):
@@ -49,11 +33,10 @@ def crear_estudiante(dni, nombre, apellido):
         return False, "Error: El nombre y apellido solo pueden contener letras."
 
     # FORMATO DEL NOMBRE Y APELLIDO
-    nombre = nombre.strip().title()
-    apellido = apellido.strip().title()
+    nombre = formatear_nombre(nombre)
+    apellido = formatear_nombre(apellido)
 
     # VERIFICAR SI EL DNI YA ESTÁ REGISTRADO
-    estudiantes = obtener_todos_estudiantes()
     if dni in estudiantes:
        return False, f"El estudiante con DNI {dni} ya está registrado."
 
@@ -61,16 +44,22 @@ def crear_estudiante(dni, nombre, apellido):
     usuario_generado = (nombre[0:1] + apellido).lower().replace(" ", "")
     legajo = len(estudiantes) + 1 
 
-    # Excepciones y Escritura en archivo
+    # Guardamos en el diccionario de memoria
+    estudiantes[dni] = {
+        "dni": dni,
+        "legajo": legajo,
+        "nombre": nombre,
+        "apellido": apellido,
+        "usuario": usuario_generado
+    }
+
     try:
-        with open(ARCHIVO_ALUMNOS, 'a', encoding='UTF-8') as archivo:
-            linea_registro = f"{dni};{legajo};{formatear_nombre(nombre)};{formatear_nombre(apellido)};{usuario_generado}\n"
-            archivo.write(linea_registro)
-        return True, f"Estudiante {formatear_nombre(nombre)} registrado con éxito."
-    except PermissionError:
-        return False, "Error: Permisos insuficientes para escribir en el archivo."
-    except OSError as e:
-        return False, f"Error de escritura o ruta inválida: {e}"
+        # Llamamos a persistencia para que actualice el CSV
+        guardar_datos()
+        return True, f"Estudiante {nombre} registrado con éxito."
+    except Exception as e:
+        return False, f"Error al guardar los datos: {e}"
+
 
 # ENCONTRAR ESTUDIANTE
 def buscar_estudiante_por_dni(dni):
@@ -78,54 +67,45 @@ def buscar_estudiante_por_dni(dni):
         return True, estudiantes[dni]
     return False, "Estudiante no encontrado."
 
+
 # UPDATE Estudiante
 def modificar_datos_estudiante(dni, nuevo_nombre, nuevo_apellido):
     if not validar_nombre_apellido(nuevo_nombre) or not validar_nombre_apellido(nuevo_apellido):
         return False, "Error: El nombre y apellido solo pueden contener letras."
     
-    encontrado = False
-    try:
-        with open(ARCHIVO_ALUMNOS, 'r', encoding='UTF-8') as orig, \
-             open("alumnos_temp.txt", 'w', encoding='UTF-8') as temp:
-            for linea in orig:
-                datos = linea.strip().split(';')
-                if len(datos) == 5 and datos[0] == str(dni):
-                    dni, legajo, old_nombre, old_apellido, usuario = datos
-                    temp.write(f"{dni};{legajo};{formatear_nombre(nuevo_nombre)};{formatear_nombre(nuevo_apellido)};{usuario}\n")
-                    encontrado = True
-                else:
-                    temp.write(linea)
-
-        os.replace("alumnos_temp.txt", ARCHIVO_ALUMNOS) 
-        if encontrado:
+    if dni in estudiantes:
+        # Actualizamos en el diccionario
+        estudiantes[dni]["nombre"] = formatear_nombre(nuevo_nombre)
+        estudiantes[dni]["apellido"] = formatear_nombre(nuevo_apellido)
+        # Opcional: Actualizar el usuario también basado en el nuevo nombre
+        estudiantes[dni]["usuario"] = (estudiantes[dni]["nombre"][0:1] + estudiantes[dni]["apellido"]).lower().replace(" ", "")
+        
+        try:
+            guardar_datos()
             return True, f"Datos del DNI {dni} actualizados con éxito."
-        return False, f"Estudiante con DNI {dni} no encontrado."
-    except Exception as e:
-        return False, f"Error al modificar archivo: {e}"
+        except Exception as e:
+            return False, f"Error al guardar los datos: {e}"
+            
+    return False, f"Estudiante con DNI {dni} no encontrado."
 
+
+# DELETE Estudiante
 def eliminar_estudiante(dni_borrar):
-    encontrado = False
-    try:
-        with open(ARCHIVO_ALUMNOS, 'r', encoding='UTF-8') as orig, \
-             open("alumnos_temp.txt", 'w', encoding='UTF-8') as temp:
-            for linea in orig:
-                datos = linea.strip().split(';')
-                if len(datos) == 5 and datos[0] == str(dni_borrar):
-                    encontrado = True 
-                else:
-                    temp.write(linea)
-                    
-        os.replace("alumnos_temp.txt", ARCHIVO_ALUMNOS)
-        if encontrado:
+    if dni_borrar in estudiantes:
+        # Borramos del diccionario
+        del estudiantes[dni_borrar]
+        try:
+            guardar_datos()
             return True, f"Estudiante con DNI {dni_borrar} eliminado del sistema."
-        return False, f"Estudiante con DNI {dni_borrar} no encontrado."
-    except Exception as e:
-        return False, f"Error al eliminar del archivo: {e}"
+        except Exception as e:
+            return False, f"Error al guardar los datos: {e}"
+            
+    return False, f"Estudiante con DNI {dni_borrar} no encontrado."
 
-# Funciones lambda
+
+# Funciones lambda (ahora lee directamente del diccionario)
 def filtrar_estudiantes_por_apellido(letra_inicial):
     """Devuelve una lista de alumnos cuyo apellido inicia con una letra específica."""
-    estudiantes = obtener_todos_estudiantes()
     todos = list(estudiantes.values())
     letra = letra_inicial.lower()
     filtrados = list(filter(lambda est: est["apellido"][0].lower() == letra, todos))

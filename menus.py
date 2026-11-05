@@ -1,13 +1,15 @@
 #Aca se importa la logica desde los modulos CRUD y el Login
 #responsabilidad del ingreso y salida de datos por consola.
 
+
 from login_general.login import verificar_credenciales, obtener_rol
 from datos_generales.persistencia import cargar_datos
-from modulos_.alumnos_CRUD import crear_estudiante, obtener_todos_estudiantes, buscar_estudiante_por_dni, modificar_datos_estudiante, eliminar_estudiante
+from modulos_.alumnos_CRUD import crear_estudiante, obtener_todos_estudiantes, buscar_estudiante_por_dni, modificar_datos_estudiante, eliminar_estudiante, filtrar_estudiantes_por_apellido
 from modulos_.materias_CRUD import crear_materia, listar_materias, modificar_materia, eliminar_materia, agregar_alumno_materia, obtener_alumnos_materia
 from modulos_.notas_CRUD import agregar_nota, obtener_notas, modificar_nota, eliminar_nota
 from modulos_.matrices_busquedas import crear_matriz_notas, buscar_notas_estudiante
 from modulos_.estadisticas import estadisticas_materia, estadisticas_generales
+from modulos_.validaciones import verificar_dni
 
 
 # LOGIN
@@ -44,14 +46,18 @@ def menu_principal(rol):
           print("7. Mostrar matriz de calificaciones")
           print("8. Buscar materias y notas de un estudiante")
           print("9. Estadisticas academicas")
-          print("10. Salir")
+          print("10. Filtrar estudiantes por inicial") # NUEVA OPCIÓN
+          print("11. Salir") # AHORA ES LA 11
       else:
           print("1. Lista estudiantes")
           print("2. Buscar estudiante")
           print("3. Mostrar matriz de calificaciones")
           print("4. Buscar materias y notas de un estudiante")
           print("5. Estadisticas academicas")
-          print("6. Salir")
+          print("6. Filtrar estudiantes por inicial") # NUEVA OPCIÓN
+          print("7. Salir") # AHORA ES LA 7
+
+
 def mostrar_menu_materias():
     print("Ingresando a Materias...")
     print("----- MATERIAS -----")
@@ -77,9 +83,20 @@ def mostrar_submenu_materia(nombre_materia):
 
 def registrar_estudiante():
     print("\033[34m------- REGISTRO DE ESTUDIANTE -------\033[0m")
-    dni = input("Ingrese el DNI del estudiante: ")
+    
+    # El while mantiene al usuario acá hasta que ingrese un DNI válido
+    while True:
+        dni = input("Ingrese el DNI del estudiante (o '0' para cancelar): ")
+        
+        if dni == '0':
+            print("Registro cancelado.")
+            return
+            
+        # Acá usamos TU función que tiene el try/except exigido en el checklist 2
+        if verificar_dni(dni): 
+            break # Si devuelve True (pasó el try/except y el Regex), sale del bucle
 
-    #SI EL DNI NO ESTÁ REGISTRADO, PEDIMOS LOS DATOS DEL ESTUDIANTE PARA REGISTRARLO
+    # Recién acá pedimos el resto
     nombre = input("Ingrese el nombre del estudiante: ")
     apellido = input("Ingrese el apellido del estudiante: ")
 
@@ -90,7 +107,6 @@ def registrar_estudiante():
         print("Apellido:", apellido)
     else:
         print(msj)
-
 
 #ENCONTRAR ESTUDIANTE
 
@@ -202,6 +218,21 @@ def buscar_estudiante():
         print("Legajo:", datos["legajo"]) 
     else:
         print(datos) # Estudiante no encontrado.
+
+def filtrar_estudiantes_menu():
+    print("\033[34m------- FILTRAR ESTUDIANTES POR INICIAL -------\033[0m")
+    letra = input("Ingrese la letra inicial del apellido: ")
+    
+    if len(letra) == 1 and letra.isalpha():
+        resultados = filtrar_estudiantes_por_apellido(letra)
+        if len(resultados) > 0:
+            print(f"Estudiantes encontrados con la letra '{letra.upper()}':")
+            for estudiante in resultados:
+                print(f"- {estudiante}")
+        else:
+            print(f"No se encontraron estudiantes cuyo apellido comience con '{letra.upper()}'.")
+    else:
+        print("Error: Por favor ingrese solo una letra.")
 
 
 #UPDATE Estudiante:
@@ -403,7 +434,8 @@ def ejecutar_sistema():
     print("Acceso permitido. Perfil:", rol)
 
     opcion = 0
-    salir = 10 if rol == "administrador" else 6
+    # Cambiamos el 10 por el 11 y el 6 por el 7
+    salir = 11 if rol == "administrador" else 7 
 
     while opcion != salir:
         menu_principal(rol)
@@ -422,6 +454,7 @@ def ejecutar_sistema():
                     7: mostrar_matriz_notas,
                     8: mostrar_busqueda_notas,
                     9: mostrar_estadisticas,
+                    10: filtrar_estudiantes_menu, 
                 }
             else:
                 acciones = {
@@ -430,6 +463,7 @@ def ejecutar_sistema():
                     3: mostrar_matriz_notas,
                     4: mostrar_busqueda_notas,
                     5: mostrar_estadisticas,
+                    6: filtrar_estudiantes_menu, 
                 }
 
             if opcion == salir:
