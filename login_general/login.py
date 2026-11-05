@@ -1,17 +1,50 @@
-#Logica de validacion de usuarios y contraseñas
-# login_general/login.py
-from datos_generales.memoria import USERYCONT, ROLES
+
+# LOGIN CON USUARIOS ALMACENADOS EN TXT
+
+from datos_generales import persistencia
+
+ARCHIVO_USUARIOS = persistencia.ARCHIVO_USUARIOS
 
 ROLES_VALIDOS = {"administrador", "usuario"}
 
+
 def verificar_credenciales(usuario, contrasena):
-    #Devuelve True si el usuario y contraseña coinciden con la memoria
-    if (usuario, contrasena) in USERYCONT:
-        return True
-    return False
+    try:
+        usuarios = persistencia.leer_lineas(
+            ARCHIVO_USUARIOS
+        )
+
+        for linea in usuarios:
+            partes = linea.split(";")
+
+            if len(partes) == 3:
+                nombre, clave, rol = partes
+
+                if nombre == usuario and clave == contrasena:
+                    return True
+
+        return False
+
+    except OSError:
+        return False
 
 
 def obtener_rol(usuario):
-    """Devuelve el rol de una cuenta o None si no está registrada."""
-    rol = ROLES.get(usuario)
-    return rol if rol in ROLES_VALIDOS else None
+    try:
+        usuarios = persistencia.leer_lineas(
+            ARCHIVO_USUARIOS
+        )
+
+        for linea in usuarios:
+            partes = linea.split(";")
+
+            if len(partes) == 3:
+                nombre, clave, rol = partes
+
+                if nombre == usuario and rol in ROLES_VALIDOS:
+                    return rol
+
+        return None
+
+    except OSError:
+        return None

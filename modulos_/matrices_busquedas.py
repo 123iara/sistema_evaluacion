@@ -1,40 +1,46 @@
 
-from datos_generales.memoria import materias
-from datos_generales.memoria import estudiantes #Lo usamos para REFERENCIAR a los alumnos y sus datos 
+# MATRICES Y BUSQUEDAS UTILIZANDO ARCHIVOS TXT
+
+from modulos_.materias_CRUD import (
+    listar_materias,
+    obtener_alumnos_materia
+)
+
+from modulos_.alumnos_CRUD import (
+    obtener_todos_estudiantes
+)
 
 
 def crear_matriz_notas():
     matriz = []
 
-    #Encabezado de la matriz para Impresion Prolija
-    encabezado = ["Materia".ljust(15), "DNI".ljust(10), "Apellido".ljust(15), "Nombre".ljust(15), "Notas"]
+    encabezado = [
+        "Materia".ljust(15),
+        "DNI".ljust(12),
+        "Apellido".ljust(15),
+        "Nombre".ljust(15),
+        "Notas"
+    ]
+
     matriz.append(encabezado)
 
-    for nombre_materia in materias:
-        alumnos = materias[nombre_materia]["alumnos"]
+    estudiantes = obtener_todos_estudiantes()
+
+    for nombre_materia in listar_materias():
+        alumnos = obtener_alumnos_materia(nombre_materia)
 
         for alumno in alumnos:
             dni = alumno["dni"]
 
-            # No copiamos los datos, los referenciamos usando el DNI
-            if dni in estudiantes:
-                datos_est = estudiantes[dni]
-                apellido_est = datos_est["apellido"]
-                nombre_est = datos_est["nombre"]
-            else:
-                apellido_est = "N/A"
-                nombre_est = "N/A"
+            datos = estudiantes.get(dni, {})
 
-            # Fila de la matriz formateada
             fila = [
-                nombre_materia.ljust(15), 
-                str(dni).ljust(10), 
-                apellido_est.ljust(15), 
-                nombre_est.ljust(15)
+                nombre_materia.ljust(15),
+                str(dni).ljust(12),
+                datos.get("apellido", "N/A").ljust(15),
+                datos.get("nombre", "N/A").ljust(15),
+                str(alumno["notas"])
             ]
-
-            # Convertimos la lista de notas a string para que no rompa la tabla al imprimir
-            fila.append(str(alumno["notas"]))
 
             matriz.append(fila)
 
@@ -44,39 +50,44 @@ def crear_matriz_notas():
 def buscar_notas_estudiante(dni):
     resultados = []
 
-    # Buscamos el nombre del alumno por referencia para mostrarlo
+    dni = str(dni).strip()
+
+    estudiantes = obtener_todos_estudiantes()
+
     if dni in estudiantes:
-        datos_est = estudiantes[dni]
-        resultados.append(f"Estudiante: {datos_est['nombre']} {datos_est['apellido']}")
+        alumno = estudiantes[dni]
+
+        resultados.append(
+            f"Estudiante: {alumno['nombre']} {alumno['apellido']}"
+        )
     else:
-        resultados.append(f"DNI {dni} no encontrado en el sistema principal.")
+        resultados.append(
+            f"DNI {dni} no encontrado en el sistema principal."
+        )
 
     resultados.append("----------------------------------")
 
-    for nombre_materia in materias:
-        alumnos = materias[nombre_materia]["alumnos"]
+    for materia in listar_materias():
+        alumnos = obtener_alumnos_materia(materia)
 
         for alumno in alumnos:
             if alumno["dni"] == dni:
-                # Agregamos la información de la cursada a la lista de resultados
                 resultados.append([
-                    nombre_materia,
+                    materia,
                     alumno["notas"]
                 ])
 
     return resultados
 
-#Creamos matriz para slicing que usaremos en el menu (para mostrar solo los datos personales de los alumnos)
+
 def obtener_datos_personales_matriz():
-    """Extrae solo los datos personales (DNI, Apellido, Nombre) de la matriz usando SLICING"""
     matriz = crear_matriz_notas()
+
     lista_datos_personales = []
-    
-    # Recorremos la matriz omitiendo el encabezado (otro uso de slicing!)
-    for fila in matriz[1:]: 
-        # REQUERIMIENTO DEL PROFE: Slicing en Listas
-        # Recortamos la lista para obviar la Materia (índice 0) y las Notas (índice 4)
-        datos_alumno = fila[1:4] 
+
+    for fila in matriz[1:]:
+        datos_alumno = fila[1:4]
+
         lista_datos_personales.append(datos_alumno)
-        
+
     return lista_datos_personales

@@ -1,97 +1,82 @@
 
+
+# ESTADISTICAS ACADEMICAS DESDE ARCHIVOS TXT
+
 from functools import reduce
 
-from datos_generales.memoria import materias
+from modulos_.materias_CRUD import (
+    listar_materias,
+    obtener_alumnos_materia
+)
 
 
 def suma_recursiva(valores):
-    """Suma una lista de forma recursiva (caso base: lista vacía)."""
     if not valores:
         return 0
+
     return valores[0] + suma_recursiva(valores[1:])
 
 
 def contar_recursivo(valores, condicion):
-    """Cuenta recursivamente los elementos que cumplen una condición."""
     if not valores:
         return 0
+
     cumple = 1 if condicion(valores[0]) else 0
-    return cumple + contar_recursivo(valores[1:], condicion)
+
+    return cumple + contar_recursivo(
+        valores[1:],
+        condicion
+    )
 
 
 def maximo_recursivo(valores):
-    """Obtiene el máximo de una lista no vacía de forma recursiva."""
     if len(valores) == 1:
         return valores[0]
+
     maximo_resto = maximo_recursivo(valores[1:])
+
     return valores[0] if valores[0] > maximo_resto else maximo_resto
 
 
-# PROMEDIO DE UN ALUMNO
-
-# PROMEDIO DE UN ALUMNO
 def calcular_promedio(notas):
-    try:
-        if len(notas) == 0:
-            raise ValueError("No hay notas para calcular el promedio.")
-
-        for nota in notas:
-            if not isinstance(nota, (int, float)):
-                raise TypeError("Todas las notas deben ser numéricas.")
-
-        return suma_recursiva(notas) / len(notas)
-
-    except (ValueError, TypeError, ZeroDivisionError) as error:
-        print("Error:", error)
+    if not notas:
         return None
 
-
-
-# ESTADISTICAS POR MATERIA
-
-# ESTADISTICAS POR MATERIA
-def estadisticas_materia(nombre_materia):
-    try:
-        if nombre_materia not in materias:
-            raise ValueError("La materia ingresada no existe.")
-
-        return _estadisticas_alumnos(materias[nombre_materia]["alumnos"])
-
-    except ValueError as error:
-        print("Error:", error)
-        return None
-
-    except KeyError:
-        print("Error: No se encontraron los datos de alumnos.")
-        return None
-
-
-
-def estadisticas_generales():
-    """Combina notas de todas las materias y calcula el resumen general."""
-    alumnos = []
-    for materia in materias.values():
-        alumnos.extend(materia["alumnos"])
-    if not alumnos:
-        return None
-    return _estadisticas_alumnos(alumnos)
+    return suma_recursiva(notas) / len(notas)
 
 
 def _estadisticas_alumnos(alumnos):
-    """Calcula estadísticas reutilizables para un conjunto de cursadas."""
-    promedios = list(filter(
-        lambda promedio: promedio is not None,
-        map(lambda alumno: calcular_promedio(alumno["notas"]), alumnos),
-    ))
-    todas_las_notas = reduce(
-        lambda acumuladas, alumno: acumuladas + alumno["notas"], alumnos, []
-    )
+    promedios = []
+
+    todas_las_notas = []
+
+    for alumno in alumnos:
+        notas = alumno["notas"]
+
+        if notas:
+            promedios.append(calcular_promedio(notas))
+            todas_las_notas.extend(notas)
+
     if not promedios:
         return None
-    aprobados = contar_recursivo(promedios, lambda promedio: promedio >= 4)
-    desaprobados = contar_recursivo(promedios, lambda promedio: promedio < 4)
-    altos = contar_recursivo(promedios, lambda promedio: promedio >= 8)
-    promedio_general = reduce(lambda total, promedio: total + promedio, promedios, 0) / len(promedios)
+
+    aprobados = contar_recursivo(
+        promedios,
+        lambda promedio: promedio >= 4
+    )
+
+    desaprobados = contar_recursivo(
+        promedios,
+        lambda promedio: promedio < 4
+    )
+
+    altos = contar_recursivo(
+        promedios,
+        lambda promedio: promedio >= 8
+    )
+
+    promedio_general = suma_recursiva(promedios) / len(promedios)
+
     return {
         "promedio_general": promedio_general,
         "aprobados": aprobados,
@@ -99,10 +84,64 @@ def _estadisticas_alumnos(alumnos):
         "porcentaje_altos": altos * 100 / len(promedios),
         "cantidad_alumnos_evaluados": len(promedios),
         "cantidad_notas": len(todas_las_notas),
-        "nota_minima": min(todas_las_notas) if todas_las_notas else None,
-        "nota_maxima": maximo_recursivo(todas_las_notas) if todas_las_notas else None,
+        "nota_minima": min(todas_las_notas),
+        "nota_maxima": maximo_recursivo(todas_las_notas),
         "resumen": (
-            f"{aprobados} aprobados, {desaprobados} desaprobados; "
+            f"{aprobados} aprobados, "
+            f"{desaprobados} desaprobados; "
             f"promedio {promedio_general:.2f}"
-        ),
+        )
     }
+
+
+def estadisticas_materia(nombre_materia):
+    nombre_materia = str(nombre_materia).strip().capitalize()
+
+    if nombre_materia not in listar_materias():
+        return None
+
+    alumnos = obtener_alumnos_materia(nombre_materia)
+
+    return _estadisticas_alumnos(alumnos)
+
+
+def estadisticas_generales():
+    alumnos = []
+
+    for materia in listar_materias():
+        alumnos.extend(
+            obtener_alumnos_materia(materia)
+        )
+
+    return _estadisticas_alumnos(alumnos)
+
+
+def estudiantes_en_todas_las_materias():
+    materias = listar_materias()
+
+    if not materias:
+        return False, "No hay materias registradas en el sistema."
+
+    dnis_por_materia = []
+
+    for materia in materias:
+        alumnos = obtener_alumnos_materia(materia)
+
+        dnis = {
+            alumno["dni"]
+            for alumno in alumnos
+        }
+
+        dnis_por_materia.append(dnis)
+
+    dnis_comunes = set.intersection(*dnis_por_materia)
+
+    if dnis_comunes:
+        return True, (
+            "DNI de los alumnos inscriptos en TODAS las materias: "
+            f"{sorted(dnis_comunes)}"
+        )
+
+    return True, (
+        "No hay ningún alumno inscripto en todas las materias."
+    )

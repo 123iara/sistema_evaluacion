@@ -1,0 +1,3 @@
+admin;admin123;administrador
+user;1234;usuario
+user2;4321;usuario

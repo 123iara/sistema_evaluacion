@@ -1,78 +1,145 @@
-#Crear, Leer, Actualizar y Borrar notas de alumnos en materias
 
-from datos_generales.memoria import materias
-from datos_generales.persistencia import guardar_datos
+# CRUD DE NOTAS UTILIZANDO ARCHIVOS TXT
 
-#NOTAS POR MATERIA
+from datos_generales import persistencia
+
+ARCHIVO_INSCRIPCIONES = persistencia.ARCHIVO_INSCRIPCIONES
+
+
+def _buscar_inscripcion(nombre_materia, dni):
+    registros = persistencia.leer_lineas(
+        ARCHIVO_INSCRIPCIONES
+    )
+
+    for indice, registro in enumerate(registros):
+        partes = registro.split(";", 2)
+
+        if len(partes) >= 2:
+            if partes[0] == nombre_materia and partes[1] == str(dni):
+                notas = []
+
+                if len(partes) == 3 and partes[2].strip():
+                    notas = [
+                        float(nota)
+                        for nota in partes[2].split(",")
+                    ]
+
+                return registros, indice, notas
+
+    return registros, None, None
+
 
 def agregar_nota(nombre_materia, dni, nota):
     try:
-        # Verificamos que la nota sea un número
-        if not isinstance(nota, (int, float)):
-            raise TypeError("La nota debe ser un número.")
+        nota = float(nota)
 
-        # Verificamos que esté entre 0 y 10
         if nota < 0 or nota > 10:
-            raise ValueError("La nota debe estar entre 0 y 10.")
+            return False, "La nota debe estar entre 0 y 10."
 
-        # Buscamos al alumno dentro de la materia
-        for alumno in materias.get(nombre_materia, {}).get("alumnos", []):
-            if alumno["dni"] == dni:
-                alumno["notas"].append(nota)
-                guardar_datos()
-                return True, "Nota agregada correctamente."
+        registros, indice, notas = _buscar_inscripcion(
+            nombre_materia,
+            dni
+        )
 
-        return False, "Alumno no encontrado en esta materia."
+        if indice is None:
+            return False, "Alumno no encontrado en esta materia."
 
-    except (TypeError, ValueError) as error:
+        notas.append(nota)
+
+        registros[indice] = (
+            f"{nombre_materia};{dni};"
+            + ",".join(map(str, notas))
+        )
+
+        persistencia.escribir_lineas(
+            ARCHIVO_INSCRIPCIONES,
+            registros
+        )
+
+        return True, "Nota agregada correctamente."
+
+    except (ValueError, OSError) as error:
         return False, str(error)
 
 
 def obtener_notas(nombre_materia, dni):
-    for alumno in materias.get(nombre_materia, {}).get("alumnos", []):
-        if alumno["dni"] == dni:
-            return True, alumno["notas"]
-    return False, "Alumno no encontrado."
-
-# MODIFICAR NOTAS
-
-def modificar_nota(nombre_materia, dni, indice, nueva_nota):
     try:
-        # Verificamos que la nota sea numérica
-        if not isinstance(nueva_nota, (int, float)):
-            raise TypeError("La nota debe ser un número.")
+        _, indice, notas = _buscar_inscripcion(
+            nombre_materia,
+            dni
+        )
 
-        # Verificamos que esté entre 0 y 10
-        if nueva_nota < 0 or nueva_nota > 10:
-            raise ValueError("La nota debe estar entre 0 y 10.")
+        if indice is None:
+            return False, "Alumno no encontrado."
 
-        # Verificamos que el índice sea entero
-        if not isinstance(indice, int):
-            raise TypeError("El índice debe ser un número entero.")
+        return True, notas
 
-        # Buscamos al alumno
-        for alumno in materias.get(nombre_materia, {}).get("alumnos", []):
-            if alumno["dni"] == dni:
-
-                if indice < 0 or indice >= len(alumno["notas"]):
-                    raise IndexError("Índice de nota incorrecto.")
-
-                alumno["notas"][indice] = nueva_nota
-                guardar_datos()
-                return True, "Nota modificada."
-
-        return False, "Alumno no encontrado."
-
-    except (TypeError, ValueError, IndexError) as error:
+    except (ValueError, OSError) as error:
         return False, str(error)
 
 
-def eliminar_nota(nombre_materia, dni, indice):
-    for alumno in materias.get(nombre_materia, {}).get("alumnos", []):
-        if alumno["dni"] == dni:
-            if 0 <= indice < len(alumno["notas"]):
-                del alumno["notas"][indice]
-                guardar_datos()
-                return True, "Nota eliminada."
+def modificar_nota(nombre_materia, dni, indice_nota, nueva_nota):
+    try:
+        nueva_nota = float(nueva_nota)
+
+        if nueva_nota < 0 or nueva_nota > 10:
+            return False, "La nota debe estar entre 0 y 10."
+
+        registros, indice, notas = _buscar_inscripcion(
+            nombre_materia,
+            dni
+        )
+
+        if indice is None:
+            return False, "Alumno no encontrado."
+
+        if not 0 <= indice_nota < len(notas):
             return False, "Índice de nota incorrecto."
-    return False, "Alumno no encontrado."
+
+        notas[indice_nota] = nueva_nota
+
+        registros[indice] = (
+            f"{nombre_materia};{dni};"
+            + ",".join(map(str, notas))
+        )
+
+        persistencia.escribir_lineas(
+            ARCHIVO_INSCRIPCIONES,
+            registros
+        )
+
+        return True, "Nota modificada correctamente."
+
+    except (ValueError, OSError) as error:
+        return False, str(error)
+
+
+def eliminar_nota(nombre_materia, dni, indice_nota):
+    try:
+        registros, indice, notas = _buscar_inscripcion(
+            nombre_materia,
+            dni
+        )
+
+        if indice is None:
+            return False, "Alumno no encontrado."
+
+        if not 0 <= indice_nota < len(notas):
+            return False, "Índice de nota incorrecto."
+
+        del notas[indice_nota]
+
+        registros[indice] = (
+            f"{nombre_materia};{dni};"
+            + ",".join(map(str, notas))
+        )
+
+        persistencia.escribir_lineas(
+            ARCHIVO_INSCRIPCIONES,
+            registros
+        )
+
+        return True, "Nota eliminada correctamente."
+
+    except (ValueError, OSError) as error:
+        return False, str(error)
