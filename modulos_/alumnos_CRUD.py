@@ -16,8 +16,7 @@ def validar_dni(dni):
 def validar_nombre_apellido(texto):
     """Verifica que el texto contenga solo letras y espacios."""
     patron = r"^[a-zA-Z\s]+$"
-    return bool(re.search(patron, texto))
-
+    return bool(re.fullmatch(patron, texto))
 
 # FUNCIONES CRUD:
 
